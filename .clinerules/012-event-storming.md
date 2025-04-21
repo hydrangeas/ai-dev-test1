@@ -65,12 +65,12 @@
 
 ```mermaid
 graph TB
-    subgraph xxフロー
+    subgraph MainFlow[メインフロー（xx時）]
         direction LR
         class1[イベント1が発生した] --> class2[イベント2が発生した]
     end
 
-    subgraph ooフロー
+    subgraph SubFlow[サブフロー（oo時）]
         direction LR
         class3[イベント3が発生した] --> class4[イベント4が発生した]
     end
@@ -78,6 +78,10 @@ graph TB
     %% スタイル定義 (イベントは橙色)
     classDef event fill:#f9d423,stroke:#333,stroke-width:2px;
     class class1,class2,class3,class4 event;
+
+    %% mermaid記載上の注意点
+    %% 1.スタイル定義中のカンマの前後には空白を入れることは禁止
+    %% 2.行末にコメントを入れることは禁止
 ```
 
 ## タイムラインの説明
