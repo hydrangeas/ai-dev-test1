@@ -1,14 +1,11 @@
 # モデリング
 
-`.clinerules/011-requirements.md` を元に、モデリングを実施します。
+`.clinerules/011-requirements.md` を元に、下記の手順でモデリングを実施してください。
 作業を進める上で必要なことはユーザーに質問してください。
 回答した内容は必ず `.clinerules/011-requirements.md` に追記してください。
 
+なお、各ステップの成果はそれぞれ定義されているファイル名で成果物として保存されますが、以前のステップの成果物を変更することは禁止します。もし不整合が生じ、以前のステップに変更を加える必要がある場合、ユーザーにその旨を提示した上で、変更すべき内容を新しいセッションで実施してください。
+
 1. `.clinerules/012-event-storming.md` step1を実施してください
-2. `.clinerules/012-event-storming.md` step1の見直しを実施してください
-   抜け、漏れ、不整合がないかチェックする
-3. `.clinerules/012-event-storming.md` step2を実施してください
-   `specs/step1.md` をインプットとして作業を開始します
-4. `.clinerules/012-event-storming.md` step2の見直しを実施してください
-   抜け、漏れ、不整合がないかチェックする
-5. 終了します(他の作業は禁止します)
+1. `.clinerules/012-event-storming.md` step2を実施してください
+1. 終了します(他の作業は禁止します)
