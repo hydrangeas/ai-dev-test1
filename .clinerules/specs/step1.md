@@ -33,8 +33,8 @@ graph TB
     D --> Ext1
 
     %% スタイル定義
-    classDef event fill:#f9d423,stroke:#333,stroke-width:2px;
-    classDef externalSystem fill:#D2B48C,stroke:#333,stroke-width:2px;
+    classDef event fill:#ff6723,stroke:#333,stroke-width:2px;
+    classDef externalSystem fill:#a56953,stroke:#333,stroke-width:2px;
     class A,C,D,E,F,G event;
     class Ext1,Ext2 externalSystem;
     %% Bは仮の分岐点であり、イベントではない

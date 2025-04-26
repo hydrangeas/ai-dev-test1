@@ -46,13 +46,13 @@ graph LR
     end
 
     %% スタイル定義
-    classDef event fill:#f9d423,stroke:#333,stroke-width:2px;
-    classDef command fill:#9cf,stroke:#333,stroke-width:2px;
-    classDef aggregate fill:#ffffe0,stroke:#333,stroke-width:2px;
-    classDef externalSystem fill:#D2B48C,stroke:#333,stroke-width:2px;
-    classDef policy fill:#90ee90,stroke:#333,stroke-width:2px;
-    classDef user fill:#fff,stroke:#333,stroke-width:2px;
-    classDef readModel fill:#000,color:#fff,stroke:#333,stroke-width:2px;
+    classDef event fill:#ff6723,stroke:#333,stroke-width:2px;
+    classDef command fill:#00a6ed,stroke:#333,stroke-width:2px;
+    classDef user fill:#ffffff,stroke:#333,stroke-width:2px;
+    classDef externalSystem fill:#a56953,stroke:#333,stroke-width:2px;
+    classDef aggregate fill:#ffb02e,stroke:#333,stroke-width:2px;
+    classDef policy fill:#00d26a,stroke:#333,stroke-width:2px;
+    classDef readModel fill:#000000,color:#fff,stroke:#333,stroke-width:2px;
 
     class EvtLogWritten,EvtUploaded,EvtUploadFailed,EvtSuccessDlg,EvtFailureDlg,EvtClosed event;
     class CmdLogWrite,CmdUpload,CmdShowSuccess,CmdShowFailure,CmdOk,CmdClose command;
