@@ -22,19 +22,25 @@ graph LR
             ExtIoTHub -- generates --> EvtUploadFailed(ファイルアップロードに失敗した<br/>FileUploadFailed 🟧)
         end
 
+        %% --- ダイアログ表示フロー (UIシステム経由) ---
         EvtUploaded -- triggers --> PolShowSuccess(方針: アップロード成功時<br/>🟩)
         PolShowSuccess -- invokes --> CmdShowSuccess(成功ダイアログを表示する<br/>🟦)
-        CmdShowSuccess -- generates --> EvtSuccessDlg(成功ダイアログが表示された<br/>SuccessDialogDisplayed 🟧)
+        CmdShowSuccess -- invoked on --> UISystem(UIシステム<br/>🟫)
+        UISystem -- generates --> EvtSuccessDlg(成功ダイアログが表示された<br/>SuccessDialogDisplayed 🟧)
 
         EvtUploadFailed -- triggers --> PolShowFailure(方針: アップロード失敗時<br/>🟩)
         PolShowFailure -- invokes --> CmdShowFailure(失敗ダイアログを表示する<br/>🟦)
-        CmdShowFailure -- generates --> EvtFailureDlg(失敗ダイアログが表示された<br/>FailureDialogDisplayed 🟧)
+        CmdShowFailure -- invoked on --> UISystem(UIシステム<br/>🟫)
+        UISystem -- generates --> EvtFailureDlg(失敗ダイアログが表示された<br/>FailureDialogDisplayed 🟧)
+        %% --- ここまで ---
 
         subgraph DialogInteraction[ダイアログ操作]
              direction LR
              EvtSuccessDlg --> UserDlgOk(ユーザー<br/>⬜)
              EvtFailureDlg --> UserDlgOk
              UserDlgOk -.-> CmdOk(OKボタンを押す<br/>🟦)
+             CmdOk -- invoked on --> UISystem
+             %% OKボタン押下によるイベントは今回は省略 (ダイアログが閉じるだけ)
         end
 
     end
@@ -42,7 +48,8 @@ graph LR
     subgraph AppClose[アプリケーション終了フロー]
          direction LR
          UserClose([一般ユーザー<br/>⬜]) -.-> CmdClose(×ボタンを押す<br/>🟦)
-         CmdClose -- generates --> EvtClosed(アプリケーションが終了された<br/>ApplicationClosed 🟧)
+         CmdClose -- invoked on --> UISystem(UIシステム<br/>🟫)
+         UISystem -- generates --> EvtClosed(アプリケーションが終了された<br/>ApplicationClosed 🟧)
     end
 
     %% スタイル定義
@@ -57,7 +64,7 @@ graph LR
     class EvtLogWritten,EvtUploaded,EvtUploadFailed,EvtSuccessDlg,EvtFailureDlg,EvtClosed event;
     class CmdLogWrite,CmdUpload,CmdShowSuccess,CmdShowFailure,CmdOk,CmdClose command;
     class AggLog aggregate;
-    class ExtIoTHub externalSystem;
+    class ExtIoTHub,UISystem externalSystem;
     class PolUpload,PolShowSuccess,PolShowFailure policy;
     class User,UserDlgOk,UserClose user;
     class RMAuth,RMLogFile readModel;
@@ -65,7 +72,7 @@ graph LR
     %% 外部システム (Blob Storageは直接的なイベント生成/コマンド受け付けがないため図からは省略)
     %% ExtBlob[Azure Blob Storage<br/>🟫]
     %% class ExtBlob externalSystem;
-    %% CmdUpload --> ExtBlob %% 関係性としては存在する
+    %% CmdUpload --> ExtBlob
 
     %% 読み取りモデル (現在時刻はログ書き込みコマンド内で使用されるが、主要フローではないため省略)
     %% RMTime(現在時刻<br/>⬛)
@@ -85,19 +92,21 @@ graph LR
 - **ファイルをアップロードする (UploadFile)**
   - `ログファイル`🟨 を `Azure IoT Hub`🟫 経由でAzure Blob Storageへアップロードする処理を開始します。`認証情報`⬛ を使用します。UIをブロッキングします。
 - **成功ダイアログを表示する (ShowSuccessDialog)**
-  - アップロード成功時に「成功」と表示されたダイアログをユーザーに提示します。
+  - `UIシステム`🟫 に対して、アップロード成功を示すダイアログの表示を指示します。
 - **失敗ダイアログを表示する (ShowFailureDialog)**
-  - アップロード失敗時に「失敗」と表示されたダイアログをユーザーに提示します。
+  - `UIシステム`🟫 に対して、アップロード失敗を示すダイアログの表示を指示します。
 - **OKボタンを押す (PressOkButton)**
-  - 成功または失敗ダイアログに表示された「OK」ボタンをユーザーが押すアクション。ダイアログを閉じます。
+  - ユーザーがダイアログの「OK」ボタンを押すアクション。`UIシステム`🟫 に対してダイアログを閉じるよう指示します。
 - **×ボタンを押す (PressCloseButton)**
-  - ユーザーがアプリケーションウィンドウの×ボタンを押すアクション。`アプリケーションを終了する`処理をトリガーします。
+  - ユーザーがアプリケーションウィンドウの×ボタンを押すアクション。`UIシステム`🟫 に対してアプリケーション終了処理を開始するよう指示します。
 
 ### 集約と外部システム 🟨🟫
 - **ログファイル (LogFile) 🟨**
   - アプリケーションが管理する主要なデータ。日付ごとのログファイル（例: `2025-04-26.log`）を表します。`ログ書き込みボタンを押す`コマンドによって状態（内容）が変更されます。
 - **Azure IoT Hub (🟫)**
   - ファイルアップロードのためのSAS URI提供やデバイス認証を行う外部システム。`ファイルをアップロードする`コマンドが作用し、結果として`ファイルがアップロードされた`または`ファイルアップロードに失敗した`イベントを生成します。（Blob Storageへの実際のアップロードはこのHub経由で行われます）
+- **UIシステム (UISystem) 🟫**
+  - アプリケーションのユーザーインターフェース（WPF）を表す外部システム。ダイアログ表示やアプリケーション終了などのコマンドを受け付け、対応するイベント（`成功ダイアログが表示された`、`失敗ダイアログが表示された`、`アプリケーションが終了された`）を生成します。
 - **Azure Blob Storage (🟫)**
   - ログファイルが最終的に格納される外部システム。（Mermaid図では直接的なやり取りがないため省略）
 
@@ -109,11 +118,11 @@ graph LR
 - **ファイルアップロードに失敗した (FileUploadFailed)**
   - `Azure IoT Hub`🟫 との通信エラーやBlob Storageへのアップロードエラーが発生したことを示します。
 - **成功ダイアログが表示された (SuccessDialogDisplayed)**
-  - ユーザーにアップロード成功のダイアログが表示されたことを示します。
+  - `UIシステム`🟫 によって、ユーザーにアップロード成功のダイアログが表示されたことを示します。
 - **失敗ダイアログが表示された (FailureDialogDisplayed)**
-  - ユーザーにアップロード失敗のダイアログが表示されたことを示します。
+  - `UIシステム`🟫 によって、ユーザーにアップロード失敗のダイアログが表示されたことを示します。
 - **アプリケーションが終了された (ApplicationClosed)**
-  - `×ボタンを押す`コマンドにより、アプリケーションが終了処理を完了したことを示します。
+  - `UIシステム`🟫 によって、アプリケーションが終了処理を完了したことを示します。
 
 ### 方針 🟩
 - **方針: ログ書き込み後アップロード (Policy: UploadAfterLogWrite)**
@@ -156,6 +165,7 @@ graph LR
 | 29   | アップロード成功時の方針   | On Upload Success Policy   | (方針名、コード直結しない)     | アップロード成功時に成功ダイアログを表示するビジネスルール               | 方針             | 2025-04-26 |
 | 30   | アップロード失敗時の方針   | On Upload Failure Policy   | (方針名、コード直結しない)     | アップロード失敗時に失敗ダイアログを表示するビジネスルール               | 方針             | 2025-04-26 |
 | 31   | 現在時刻                   | Current Time               | `DateTimeOffset.Now` (JST)     | ログファイル名やタイムスタンプ取得に必要な現在の時刻情報 (JST)         | 読み取りモデル   | 2025-04-26 |
+| 32   | UIシステム                 | UI System                  | `uiDispatcher` / `window`      | アプリケーションのユーザーインターフェース（WPF）                      | 外部システム     | 2025-04-27 |
 
 **変更:**
 *   ステップ1の `6: ファイルアップロード` を `22: ファイルをアップロードする` (コマンド) に変更。
@@ -223,4 +233,5 @@ graph LR
 
 |更新日時|変更点|
 |-|-|
+|2025-04-27T20:19:00+09:00|UIシステムを外部システムとして導入し、ダイアログ表示とアプリ終了フローをルールに準拠するよう修正。関連説明とユビキタス言語辞書も更新。|
 |2025-04-26T22:05:30+09:00|ステップ2のモデリング結果を新規作成|
