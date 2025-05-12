@@ -201,9 +201,9 @@ gantt
     dateFormat YYYY-MM-DD
     section Section
         A task          :a1, 2014-01-01, 30d
-        Another task    :after a1, 20d
+        Another task    :a2, after a1, 20d
     section Another
-        Task in Another :2014-01-12, 12d
+        Task in Another :b1, after a1 a2, 12d
         another task    :24d
 ```
 [タスク作成日を基準日とし、そこから工数と依存関係を確認する]
@@ -224,6 +224,16 @@ gantt
 |2|0001|[タスクの短い説明]|[高/中/低]|X(約X日)|0002|
 |3|0003|[タスクの短い説明]|[高/中/低]|X(約X日)|0001,0002|
 ```
+
+### テンプレート作成時の注意点
+
+- タイトル(`#`、`##`、`###`、`####`、`#####`)の次の行は空行とすること
+- mermaidでガントチャート(`gantt`)を作成する場合、下記を守ること
+  - `:`は1文で一つとすること
+  - `:`の前はタスク名、`:`の後はタスク番号とする
+  - 依存関係を表す`after`を使用する場合、事前依存するものが複数ある場合は半角空白一つで結合する
+    悪い例: `after a1, after a2`
+    良い例: `after a1 a2`
 
 ## 技術スタックとインフラ情報
 
