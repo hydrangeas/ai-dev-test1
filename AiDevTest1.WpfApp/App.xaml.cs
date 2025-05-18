@@ -51,7 +51,7 @@ namespace AiDevTest1.WpfApp
       services.AddTransient<IFileUploadService, FileUploadService>();
 
       // ViewModels
-      services.AddTransient<MainWindowViewModel>();
+      services.AddSingleton<MainWindowViewModel>();
 
       // Main Window
       services.AddSingleton<MainWindow>();

@@ -14,16 +14,6 @@
             <TextBlock Text="Hello, WPF!"
                        FontSize="24"
                        HorizontalAlignment="Center"/>
-            <TextBlock Text="Loaded Connection String:"
-                       Margin="0,20,0,5"
-                       HorizontalAlignment="Center"/>
-            <TextBox Text="{Binding ConnectionStringForDisplay, Mode=OneWay}"
-                     IsReadOnly="True"
-                     TextWrapping="Wrap"
-                     MinWidth="300"
-                     MaxWidth="600"
-                     HorizontalAlignment="Center"
-                     TextAlignment="Center"/>
         </StackPanel>
     </Grid>
 </Window>
