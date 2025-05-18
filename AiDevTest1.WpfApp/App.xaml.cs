@@ -1,37 +1,57 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using AiDevTest1.Application.Interfaces;
+using AiDevTest1.Application.Models;
 using AiDevTest1.Infrastructure.Services;
 using AiDevTest1.WpfApp.ViewModels;
+using Microsoft.Extensions.Logging; // Kept for ILogger if used by Host.CreateDefaultBuilder or future use
+using System;
 using System.Windows;
 
 namespace AiDevTest1.WpfApp
 {
-  /// <summary>
-  /// Interaction logic for App.xaml
-  /// </summary>
   public partial class App : System.Windows.Application
   {
     public static IHost? AppHost { get; private set; }
 
     public App()
     {
-      AppHost = Host.CreateDefaultBuilder()
-          .ConfigureServices((hostContext, services) =>
-          {
-            ConfigureServices(services);
-          })
-          .Build();
+      try
+      {
+        AppHost = Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+              config.SetBasePath(AppContext.BaseDirectory);
+              config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+              config.AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+            })
+            .ConfigureServices((hostContext, services) =>
+            {
+              ConfigureServices(services, hostContext.Configuration);
+            })
+            .Build();
+      }
+      catch (Exception ex)
+      {
+        // Consider a more robust way to display/log critical startup errors
+        // For now, exiting is a simple approach.
+        MessageBox.Show($"Critical application startup error: {ex.Message}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        Environment.Exit(-1);
+      }
     }
 
-    private void ConfigureServices(IServiceCollection services)
+    private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
+      var authSection = configuration.GetSection("AuthInfo");
+      services.Configure<AuthenticationInfo>(authSection);
+
       // Services
       services.AddSingleton<ILogWriteService, LogWriteService>();
       services.AddTransient<IFileUploadService, FileUploadService>();
 
       // ViewModels
-      services.AddTransient<MainWindowViewModel>();
+      services.AddSingleton<MainWindowViewModel>();
 
       // Main Window
       services.AddSingleton<MainWindow>();
@@ -39,21 +59,43 @@ namespace AiDevTest1.WpfApp
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-      ArgumentNullException.ThrowIfNull(AppHost);
-      await AppHost.StartAsync();
+      try
+      {
+        if (AppHost == null)
+        {
+          MessageBox.Show("Application host is not initialized.", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+          Environment.Exit(-1);
+          return;
+        }
+        await AppHost.StartAsync();
 
-      var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
-      mainWindow.Show();
+        var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
+        mainWindow.Show();
 
-      base.OnStartup(e);
+        base.OnStartup(e);
+      }
+      catch (Exception ex)
+      {
+        // Consider a more robust way to display/log critical startup errors
+        MessageBox.Show($"Error during application startup: {ex.Message}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        Environment.Exit(-1);
+      }
     }
 
     protected override async void OnExit(ExitEventArgs e)
     {
       if (AppHost != null)
       {
-        await AppHost.StopAsync();
-        AppHost.Dispose();
+        try
+        {
+          await AppHost.StopAsync();
+          AppHost.Dispose();
+        }
+        catch (Exception ex)
+        {
+          // Log or handle error during host stop/dispose if necessary
+          System.Diagnostics.Debug.WriteLine($"Error during AppHost stop/dispose: {ex.Message}");
+        }
       }
       base.OnExit(e);
     }

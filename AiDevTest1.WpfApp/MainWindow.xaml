@@ -9,9 +9,11 @@
         Height="450"
         Width="800">
     <Grid>
-        <TextBlock Text="Hello, WPF!"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="24"/>
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+            <TextBlock Text="Hello, WPF!"
+                       FontSize="24"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
     </Grid>
 </Window>
