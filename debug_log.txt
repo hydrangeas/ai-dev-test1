@@ -1,0 +1,155 @@
+2025/05/18 20:25:03: [APP CONSTRUCTOR] Entered App constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:25:03: [CONFIGURE_SERVICES] Entered ConfigureServices.
+2025/05/18 20:25:03: [CONFIGURE_SERVICES] AuthInfo section exists: False
+2025/05/18 20:25:03: [CONFIGURE_SERVICES] ConnectionString from IConfiguration: ''
+2025/05/18 20:25:03: [CONFIGURE_SERVICES] AuthenticationInfo configured.
+2025/05/18 20:25:03: [CONFIGURE_SERVICES] Exiting ConfigureServices (AuthenticationInfo only).
+2025/05/18 20:25:03: [APP CONSTRUCTOR] Host built successfully with services.
+2025/05/18 20:25:03: [APP CONSTRUCTOR] Exiting constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:25:03: [APP ONSTARTUP] Entered OnStartup (Testing AuthenticationInfo config with File Logging).
+2025/05/18 20:25:03: [APP ONSTARTUP] AppHost started successfully.
+2025/05/18 20:25:03: [APP ONSTARTUP] IOptions<AuthenticationInfo>.Value.ConnectionString: ''
+2025/05/18 20:25:13: [APP ONEXIT] Entered OnExit.
+2025/05/18 20:25:13: [APP ONEXIT] AppHost stopped.
+2025/05/18 20:25:13: [APP ONEXIT] AppHost disposed.
+2025/05/18 20:25:42: [APP CONSTRUCTOR] Entered App constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:25:42: [CONFIGURE_SERVICES] Entered ConfigureServices.
+2025/05/18 20:25:42: [CONFIGURE_SERVICES] AuthInfo section exists: False
+2025/05/18 20:25:42: [CONFIGURE_SERVICES] ConnectionString from IConfiguration: ''
+2025/05/18 20:25:42: [CONFIGURE_SERVICES] AuthenticationInfo configured.
+2025/05/18 20:25:42: [CONFIGURE_SERVICES] Exiting ConfigureServices (AuthenticationInfo only).
+2025/05/18 20:25:42: [APP CONSTRUCTOR] Host built successfully with services.
+2025/05/18 20:25:42: [APP CONSTRUCTOR] Exiting constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:25:42: [APP ONSTARTUP] Entered OnStartup (Testing AuthenticationInfo config with File Logging).
+2025/05/18 20:25:42: [APP ONSTARTUP] AppHost started successfully.
+2025/05/18 20:25:42: [APP ONSTARTUP] IOptions<AuthenticationInfo>.Value.ConnectionString: ''
+2025/05/18 20:25:45: [APP ONEXIT] Entered OnExit.
+2025/05/18 20:25:45: [APP ONEXIT] AppHost stopped.
+2025/05/18 20:25:45: [APP ONEXIT] AppHost disposed.
+2025/05/18 20:27:48: [APP CONSTRUCTOR] Entered App constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:27:48: [APP CONSTRUCTOR] Setting base path for configuration to: C:\Users\hydra\source\repos\ai-dev-test1\AiDevTest1.WpfApp\bin\Debug\net8.0-windows\
+2025/05/18 20:27:48: [CONFIGURE_SERVICES] Entered ConfigureServices.
+2025/05/18 20:27:48: [CONFIGURE_SERVICES] AuthInfo section exists: False
+2025/05/18 20:27:48: [CONFIGURE_SERVICES] ConnectionString from IConfiguration: ''
+2025/05/18 20:27:48: [CONFIGURE_SERVICES] AuthenticationInfo configured.
+2025/05/18 20:27:48: [CONFIGURE_SERVICES] Exiting ConfigureServices (AuthenticationInfo only).
+2025/05/18 20:27:48: [APP CONSTRUCTOR] Host built successfully with services.
+2025/05/18 20:27:48: [APP CONSTRUCTOR] Exiting constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:27:48: [APP ONSTARTUP] Entered OnStartup (Testing AuthenticationInfo config with File Logging).
+2025/05/18 20:27:48: [APP ONSTARTUP] AppHost started successfully.
+2025/05/18 20:27:48: [APP ONSTARTUP] IOptions<AuthenticationInfo>.Value.ConnectionString: ''
+2025/05/18 20:28:26: [APP ONEXIT] Entered OnExit.
+2025/05/18 20:28:26: [APP ONEXIT] AppHost stopped.
+2025/05/18 20:28:26: [APP ONEXIT] AppHost disposed.
+2025/05/18 20:31:34: [APP CONSTRUCTOR] Entered App constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:31:34: [APP CONSTRUCTOR] Setting base path for configuration to: C:\Users\hydra\source\repos\ai-dev-test1\AiDevTest1.WpfApp\bin\Debug\net8.0-windows\
+2025/05/18 20:31:34: [APP CONSTRUCTOR] Configuring app configuration sources.
+2025/05/18 20:31:34: [APP CONSTRUCTOR] Attempting to load appsettings for environment: Production
+2025/05/18 20:31:34: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+2025/05/18 20:31:34: [APP CONSTRUCTOR ERROR - FULL INIT]
+2025/05/18 20:31:34: Message: The configuration file 'appsettings.json' was not found and is not optional. The expected physical path was 'C:\Users\hydra\source\repos\ai-dev-test1\appsettings.json'.
+2025/05/18 20:31:34: StackTrace:    at Microsoft.Extensions.Configuration.FileConfigurationProvider.HandleException(ExceptionDispatchInfo info)
+   at Microsoft.Extensions.Configuration.FileConfigurationProvider.Load(Boolean reload)
+   at Microsoft.Extensions.Configuration.FileConfigurationProvider.Load()
+   at Microsoft.Extensions.Configuration.ConfigurationRoot..ctor(IList`1 providers)
+   at Microsoft.Extensions.Configuration.ConfigurationBuilder.Build()
+   at Microsoft.Extensions.Hosting.HostBuilder.InitializeAppConfiguration()
+   at Microsoft.Extensions.Hosting.HostBuilder.Build()
+   at AiDevTest1.WpfApp.App..ctor() in C:\Users\hydra\source\repos\ai-dev-test1\AiDevTest1.WpfApp\App.xaml.cs:line 30
+2025/05/18 20:31:34: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+2025/05/18 20:32:40: [APP CONSTRUCTOR] Entered App constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:32:40: [APP CONSTRUCTOR] Setting base path for app configuration to: C:\Users\hydra\source\repos\ai-dev-test1\AiDevTest1.WpfApp\bin\Debug\net8.0-windows\
+2025/05/18 20:32:40: [APP CONSTRUCTOR] Attempting to load appsettings for environment: Production
+2025/05/18 20:32:40: [CONFIGURE_SERVICES] Entered ConfigureServices.
+2025/05/18 20:32:40: [CONFIGURE_SERVICES] AuthInfo section exists: True
+2025/05/18 20:32:40: [CONFIGURE_SERVICES] ConnectionString from IConfiguration: 'YOUR_DUMMY_CONNECTION_STRING_HERE'
+2025/05/18 20:32:40: [CONFIGURE_SERVICES] AuthenticationInfo configured.
+2025/05/18 20:32:40: [CONFIGURE_SERVICES] Exiting ConfigureServices (AuthenticationInfo only).
+2025/05/18 20:32:40: [APP CONSTRUCTOR] Host built successfully with services.
+2025/05/18 20:32:40: [APP CONSTRUCTOR] Exiting constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:32:40: [APP ONSTARTUP] Entered OnStartup (Testing AuthenticationInfo config with File Logging).
+2025/05/18 20:32:40: [APP ONSTARTUP] AppHost started successfully.
+2025/05/18 20:32:40: [APP ONSTARTUP] IOptions<AuthenticationInfo>.Value.ConnectionString: 'YOUR_DUMMY_CONNECTION_STRING_HERE'
+2025/05/18 20:32:50: [APP ONEXIT] Entered OnExit.
+2025/05/18 20:32:50: [APP ONEXIT] AppHost stopped.
+2025/05/18 20:32:50: [APP ONEXIT] AppHost disposed.
+2025/05/18 20:35:23: [APP CONSTRUCTOR] Entered App constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:35:23: [APP CONSTRUCTOR] Setting base path for app configuration to: C:\Users\hydra\source\repos\ai-dev-test1\AiDevTest1.WpfApp\bin\Debug\net8.0-windows\
+2025/05/18 20:35:23: [APP CONSTRUCTOR] Attempting to load appsettings for environment: Production
+2025/05/18 20:35:23: [CONFIGURE_SERVICES] Entered ConfigureServices.
+2025/05/18 20:35:23: [CONFIGURE_SERVICES] AuthInfo section exists: True
+2025/05/18 20:35:23: [CONFIGURE_SERVICES] ConnectionString from IConfiguration: 'YOUR_DUMMY_CONNECTION_STRING_HERE'
+2025/05/18 20:35:23: [CONFIGURE_SERVICES] AuthenticationInfo configured.
+2025/05/18 20:35:23: [CONFIGURE_SERVICES] App Services configured.
+2025/05/18 20:35:23: [CONFIGURE_SERVICES] ViewModels configured.
+2025/05/18 20:35:23: [CONFIGURE_SERVICES] MainWindow configured.
+2025/05/18 20:35:23: [CONFIGURE_SERVICES] Exiting ConfigureServices (All services restored).
+2025/05/18 20:35:23: [APP CONSTRUCTOR] Host built successfully with services.
+2025/05/18 20:35:23: [APP CONSTRUCTOR] Exiting constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:35:23: [APP ONSTARTUP] Entered OnStartup (Full App Run).
+2025/05/18 20:35:23: [APP ONSTARTUP] AppHost started successfully.
+2025/05/18 20:35:24: [APP ONSTARTUP] MainWindow resolved from DI.
+2025/05/18 20:35:24: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+2025/05/18 20:35:24: [APP ONSTARTUP ERROR - APP RUN]
+2025/05/18 20:35:24: Message: TwoWay または OneWayToSource バインドは、型 'AiDevTest1.WpfApp.ViewModels.MainWindowViewModel' の読み取り専用プロパティ 'ConnectionStringForDisplay' では動作できません。
+2025/05/18 20:35:24: StackTrace:    at MS.Internal.Data.PropertyPathWorker.CheckReadOnly(Object item, Object info)
+   at MS.Internal.Data.PropertyPathWorker.ReplaceItem(Int32 k, Object newO, Object parent)
+   at MS.Internal.Data.PropertyPathWorker.UpdateSourceValueState(Int32 k, ICollectionView collectionView, Object newValue, Boolean isASubPropertyChange)
+   at MS.Internal.Data.ClrBindingWorker.AttachDataItem()
+   at System.Windows.Data.BindingExpression.Activate(Object item)
+   at System.Windows.Data.BindingExpression.AttachToContext(AttachAttempt attempt)
+   at System.Windows.Data.BindingExpression.MS.Internal.Data.IDataBindEngineClient.AttachToContext(Boolean lastChance)
+   at MS.Internal.Data.DataBindEngine.Task.Run(Boolean lastChance)
+   at MS.Internal.Data.DataBindEngine.Run(Object arg)
+   at MS.Internal.Data.DataBindEngine.OnLayoutUpdated(Object sender, EventArgs e)
+   at System.Windows.ContextLayoutManager.fireLayoutUpdateEvent()
+   at System.Windows.ContextLayoutManager.UpdateLayout()
+   at System.Windows.Interop.HwndSource.SetLayoutSize()
+   at System.Windows.Interop.HwndSource.set_RootVisualInternal(Visual value)
+   at System.Windows.Window.SetRootVisualAndUpdateSTC()
+   at System.Windows.Window.SetupInitialState(Double requestedTop, Double requestedLeft, Double requestedWidth, Double requestedHeight)
+   at System.Windows.Window.CreateSourceWindow(Boolean duringShow)
+   at System.Windows.Window.ShowHelper(Object booleanBox)
+   at System.Windows.Window.Show()
+   at AiDevTest1.WpfApp.App.OnStartup(StartupEventArgs e) in C:\Users\hydra\source\repos\ai-dev-test1\AiDevTest1.WpfApp\App.xaml.cs:line 110
+2025/05/18 20:35:24: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+2025/05/18 20:37:23: [APP CONSTRUCTOR] Entered App constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:37:23: [APP CONSTRUCTOR] Setting base path for app configuration to: C:\Users\hydra\source\repos\ai-dev-test1\AiDevTest1.WpfApp\bin\Debug\net8.0-windows\
+2025/05/18 20:37:23: [APP CONSTRUCTOR] Attempting to load appsettings for environment: Production
+2025/05/18 20:37:23: [CONFIGURE_SERVICES] Entered ConfigureServices.
+2025/05/18 20:37:23: [CONFIGURE_SERVICES] AuthInfo section exists: True
+2025/05/18 20:37:23: [CONFIGURE_SERVICES] ConnectionString from IConfiguration: 'YOUR_DUMMY_CONNECTION_STRING_HERE'
+2025/05/18 20:37:23: [CONFIGURE_SERVICES] AuthenticationInfo configured.
+2025/05/18 20:37:23: [CONFIGURE_SERVICES] App Services configured.
+2025/05/18 20:37:23: [CONFIGURE_SERVICES] ViewModels configured.
+2025/05/18 20:37:23: [CONFIGURE_SERVICES] MainWindow configured.
+2025/05/18 20:37:23: [CONFIGURE_SERVICES] Exiting ConfigureServices (All services restored).
+2025/05/18 20:37:23: [APP CONSTRUCTOR] Host built successfully with services.
+2025/05/18 20:37:23: [APP CONSTRUCTOR] Exiting constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:37:23: [APP ONSTARTUP] Entered OnStartup (Full App Run).
+2025/05/18 20:37:23: [APP ONSTARTUP] AppHost started successfully.
+2025/05/18 20:37:23: [APP ONSTARTUP] MainWindow resolved from DI.
+2025/05/18 20:37:23: [APP ONSTARTUP] mainWindow.Show() called.
+2025/05/18 20:37:34: [APP ONEXIT] Entered OnExit.
+2025/05/18 20:37:34: [APP ONEXIT] AppHost stopped.
+2025/05/18 20:37:34: [APP ONEXIT] AppHost disposed.
+2025/05/18 20:38:13: [APP CONSTRUCTOR] Entered App constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:38:13: [APP CONSTRUCTOR] Setting base path for app configuration to: C:\Users\hydra\source\repos\ai-dev-test1\AiDevTest1.WpfApp\bin\Debug\net8.0-windows\
+2025/05/18 20:38:13: [APP CONSTRUCTOR] Attempting to load appsettings for environment: Production
+2025/05/18 20:38:13: [CONFIGURE_SERVICES] Entered ConfigureServices.
+2025/05/18 20:38:13: [CONFIGURE_SERVICES] AuthInfo section exists: True
+2025/05/18 20:38:13: [CONFIGURE_SERVICES] ConnectionString from IConfiguration: 'YOUR_DUMMY_CONNECTION_STRING_HERE'
+2025/05/18 20:38:13: [CONFIGURE_SERVICES] AuthenticationInfo configured.
+2025/05/18 20:38:13: [CONFIGURE_SERVICES] App Services configured.
+2025/05/18 20:38:13: [CONFIGURE_SERVICES] ViewModels configured.
+2025/05/18 20:38:13: [CONFIGURE_SERVICES] MainWindow configured.
+2025/05/18 20:38:13: [CONFIGURE_SERVICES] Exiting ConfigureServices (All services restored).
+2025/05/18 20:38:13: [APP CONSTRUCTOR] Host built successfully with services.
+2025/05/18 20:38:13: [APP CONSTRUCTOR] Exiting constructor (Phase 2: Full Init with File Logging).
+2025/05/18 20:38:13: [APP ONSTARTUP] Entered OnStartup (Full App Run).
+2025/05/18 20:38:13: [APP ONSTARTUP] AppHost started successfully.
+2025/05/18 20:38:14: [APP ONSTARTUP] MainWindow resolved from DI.
+2025/05/18 20:38:14: [APP ONSTARTUP] mainWindow.Show() called.
+2025/05/18 20:39:22: [APP ONEXIT] Entered OnExit.
+2025/05/18 20:39:22: [APP ONEXIT] AppHost stopped.
+2025/05/18 20:39:22: [APP ONEXIT] AppHost disposed.

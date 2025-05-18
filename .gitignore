@@ -102,6 +102,9 @@ artifacts/
 .env.*
 !.env.example
 
+# Application configuration files
+**/appsettings.Development.json
+
 # Operations Management Suite (OMS) instrumentation key and host entry
 Logging.Mode=VisualStudio
 HockeyAppSampleiOSCrashOnly.sln.ideobjecthistory
