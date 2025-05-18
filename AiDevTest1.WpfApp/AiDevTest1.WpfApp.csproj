@@ -9,11 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AiDevTest1.Application\AiDevTest1.Application.csproj" />
+    <ProjectReference Include="..\AiDevTest1.Infrastructure\AiDevTest1.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
