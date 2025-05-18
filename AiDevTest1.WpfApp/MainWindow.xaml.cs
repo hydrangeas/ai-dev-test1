@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using AiDevTest1.WpfApp.ViewModels;
 
 namespace AiDevTest1.WpfApp;
 
@@ -15,8 +16,12 @@ namespace AiDevTest1.WpfApp;
 /// </summary>
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    private readonly MainWindowViewModel _viewModel;
+
+    public MainWindow(MainWindowViewModel viewModel)
     {
         InitializeComponent();
+        _viewModel = viewModel;
+        DataContext = _viewModel;
     }
 }

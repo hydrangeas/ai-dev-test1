@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Configuration;
-using System.Data;
+using AiDevTest1.Application.Interfaces;
+using AiDevTest1.Infrastructure.Services;
+using AiDevTest1.WpfApp.ViewModels;
 using System.Windows;
 
 namespace AiDevTest1.WpfApp
@@ -11,12 +12,12 @@ namespace AiDevTest1.WpfApp
   /// </summary>
   public partial class App : System.Windows.Application
   {
-    private IHost _host;
+    public static IHost? AppHost { get; private set; }
 
     public App()
     {
-      _host = Host.CreateDefaultBuilder()
-          .ConfigureServices((context, services) =>
+      AppHost = Host.CreateDefaultBuilder()
+          .ConfigureServices((hostContext, services) =>
           {
             ConfigureServices(services);
           })
@@ -25,19 +26,23 @@ namespace AiDevTest1.WpfApp
 
     private void ConfigureServices(IServiceCollection services)
     {
-      // Register services here
-      // e.g., services.AddSingleton<IMyService, MyService>();
+      // Services
+      services.AddSingleton<ILogWriteService, LogWriteService>();
+      services.AddTransient<IFileUploadService, FileUploadService>();
 
-      // Register Views and ViewModels
+      // ViewModels
+      services.AddTransient<MainWindowViewModel>();
+
+      // Main Window
       services.AddSingleton<MainWindow>();
-      // e.g., services.AddTransient<MyViewModel>();
     }
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-      await _host.StartAsync();
+      ArgumentNullException.ThrowIfNull(AppHost);
+      await AppHost.StartAsync();
 
-      var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+      var mainWindow = AppHost.Services.GetRequiredService<MainWindow>();
       mainWindow.Show();
 
       base.OnStartup(e);
@@ -45,11 +50,11 @@ namespace AiDevTest1.WpfApp
 
     protected override async void OnExit(ExitEventArgs e)
     {
-      using (_host)
+      if (AppHost != null)
       {
-        await _host.StopAsync(TimeSpan.FromSeconds(5)); // Allow 5 seconds for graceful shutdown
+        await AppHost.StopAsync();
+        AppHost.Dispose();
       }
-
       base.OnExit(e);
     }
   }
