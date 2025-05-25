@@ -9,6 +9,21 @@ namespace AiDevTest1.Domain.Models;
 public class LogEntry
 {
   /// <summary>
+  /// JSON シリアライズ用の共有設定（パフォーマンス最適化）
+  /// </summary>
+  private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new()
+  {
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    Converters = { new JsonStringEnumConverter() },
+    WriteIndented = false
+  };
+
+  /// <summary>
+  /// JST タイムゾーン情報（パフォーマンス最適化）
+  /// </summary>
+  private static readonly TimeZoneInfo JstTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
+
+  /// <summary>
   /// ログエントリのタイムスタンプ
   /// </summary>
   public DateTimeOffset Timestamp { get; init; }
@@ -54,13 +69,6 @@ public class LogEntry
   /// <returns>JSON Lines形式の文字列</returns>
   public string ToJsonLine()
   {
-    var options = new JsonSerializerOptions
-    {
-      PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-      Converters = { new JsonStringEnumConverter() },
-      WriteIndented = false
-    };
-
     // JSTタイムゾーンに変換してからシリアライズ
     var jstTimestamp = ConvertToJst(Timestamp);
     var jsonObject = new
@@ -70,7 +78,7 @@ public class LogEntry
       comment = Comment
     };
 
-    return JsonSerializer.Serialize(jsonObject, options);
+    return JsonSerializer.Serialize(jsonObject, CachedJsonSerializerOptions);
   }
 
   /// <summary>
@@ -79,8 +87,7 @@ public class LogEntry
   /// <returns>JST時刻のDateTimeOffset</returns>
   private static DateTimeOffset GetJstNow()
   {
-    var jstTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
-    return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, jstTimeZone);
+    return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, JstTimeZone);
   }
 
   /// <summary>
@@ -90,7 +97,6 @@ public class LogEntry
   /// <returns>JSTに変換された日時</returns>
   private static DateTimeOffset ConvertToJst(DateTimeOffset dateTime)
   {
-    var jstTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
-    return TimeZoneInfo.ConvertTime(dateTime, jstTimeZone);
+    return TimeZoneInfo.ConvertTime(dateTime, JstTimeZone);
   }
 }
