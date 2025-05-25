@@ -11,17 +11,17 @@ public class LogEntryFactory : ILogEntryFactory
   /// <summary>
   /// ランダム選択用のRandomインスタンス
   /// </summary>
-  private static readonly Random Random = Random.Shared;
+  private static readonly Random _random = Random.Shared;
 
   /// <summary>
   /// EventTypeの配列（パフォーマンス最適化のためキャッシュ）
   /// </summary>
-  private static readonly EventType[] CachedEventTypes = Enum.GetValues<EventType>();
+  private static readonly EventType[] _cachedEventTypes = Enum.GetValues<EventType>();
 
   /// <summary>
   /// EventTypeごとのメッセージ定義
   /// </summary>
-  private static readonly Dictionary<EventType, string[]> EventMessages = new()
+  private static readonly Dictionary<EventType, string[]> _eventMessages = new()
   {
     {
       EventType.START,
@@ -65,13 +65,13 @@ public class LogEntryFactory : ILogEntryFactory
   /// <exception cref="ArgumentException">無効なEventTypeが指定された場合</exception>
   public LogEntry CreateLogEntry(EventType eventType)
   {
-    if (!EventMessages.TryGetValue(eventType, out var messages))
+    if (!_eventMessages.TryGetValue(eventType, out var messages))
     {
       throw new ArgumentException($"Unsupported EventType: {eventType}", nameof(eventType));
     }
 
     // ランダムにメッセージを選択
-    var selectedMessage = messages[Random.Next(messages.Length)];
+    var selectedMessage = messages[_random.Next(messages.Length)];
 
     // LogEntryを作成（タイムスタンプは省略でJST現在時刻が自動設定される）
     return new LogEntry(eventType, selectedMessage);
@@ -84,7 +84,7 @@ public class LogEntryFactory : ILogEntryFactory
   public LogEntry CreateLogEntry()
   {
     // ランダムにEventTypeを選択（キャッシュされた配列を使用）
-    var randomEventType = CachedEventTypes[Random.Next(CachedEventTypes.Length)];
+    var randomEventType = _cachedEventTypes[_random.Next(_cachedEventTypes.Length)];
 
     // 選択されたEventTypeで LogEntry を作成
     return CreateLogEntry(randomEventType);
