@@ -1,6 +1,8 @@
 using AiDevTest1.Application.Interfaces;
+using AiDevTest1.Domain.Models;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace AiDevTest1.Infrastructure.Services
 {
@@ -27,6 +29,19 @@ namespace AiDevTest1.Infrastructure.Services
       var filePath = Path.Combine(_baseDirectory, fileName);
 
       return filePath;
+    }
+
+    public async Task AppendLogEntryAsync(LogEntry logEntry)
+    {
+      if (logEntry == null)
+      {
+        throw new ArgumentNullException(nameof(logEntry));
+      }
+
+      var filePath = GetCurrentLogFilePath();
+      var jsonLine = logEntry.ToJsonLine() + Environment.NewLine;
+
+      await File.AppendAllTextAsync(filePath, jsonLine);
     }
   }
 }
