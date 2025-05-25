@@ -5,11 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AiDevTest1.WpfApp"
         xmlns:viewmodels="clr-namespace:AiDevTest1.WpfApp.ViewModels"
+        xmlns:converters="clr-namespace:AiDevTest1.WpfApp.Converters"
         mc:Ignorable="d"
         Title="AiDevTest1 WPF App"
         Height="450"
         Width="800">
-    <Grid>
+
+    <Window.Resources>
+        <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        <converters:BoolToCursorConverter x:Key="BoolToCursorConverter"/>
+    </Window.Resources>
+
+    <Grid IsEnabled="{Binding IsProcessing, Converter={StaticResource InverseBoolConverter}}"
+          Cursor="{Binding IsProcessing, Converter={StaticResource BoolToCursorConverter}}">
         <StackPanel HorizontalAlignment="Center"
                     VerticalAlignment="Center">
             <TextBlock Text="Hello, WPF!"
