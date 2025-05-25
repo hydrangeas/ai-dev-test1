@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +23,7 @@
     <ProjectReference Include="..\AiDevTest1.Domain\AiDevTest1.Domain.csproj" />
     <ProjectReference Include="..\AiDevTest1.Application\AiDevTest1.Application.csproj" />
     <ProjectReference Include="..\AiDevTest1.Infrastructure\AiDevTest1.Infrastructure.csproj" />
+    <ProjectReference Include="..\AiDevTest1.WpfApp\AiDevTest1.WpfApp.csproj" />
   </ItemGroup>
 
 </Project>
