@@ -17,7 +17,6 @@
                        HorizontalAlignment="Center"/>
             <Button Content="ログ書き込み"
                     Command="{Binding LogWriteCommand}"
-                    IsEnabled="{Binding LogWriteCommand.CanExecute}"
                     Margin="0,20,0,0"
                     Padding="10,5"
                     FontSize="16"
