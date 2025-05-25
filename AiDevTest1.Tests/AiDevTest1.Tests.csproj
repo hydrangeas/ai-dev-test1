@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AiDevTest1.Domain\AiDevTest1.Domain.csproj" />
     <ProjectReference Include="..\AiDevTest1.Application\AiDevTest1.Application.csproj" />
+    <ProjectReference Include="..\AiDevTest1.Infrastructure\AiDevTest1.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
