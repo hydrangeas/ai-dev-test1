@@ -22,7 +22,7 @@ namespace AiDevTest1.Tests
       // Assert
       Assert.NotNull(filePath);
       Assert.NotEmpty(filePath);
-      Assert.True(filePath.EndsWith(".log"));
+      Assert.EndsWith(".log", filePath);
       Assert.True(Path.IsPathFullyQualified(filePath));
     }
 
@@ -135,7 +135,7 @@ namespace AiDevTest1.Tests
       ILogFileHandler handler = new LogFileHandler();
 
       // Act & Assert
-      await Assert.ThrowsAsync<ArgumentNullException>(() => handler.AppendLogEntryAsync(null));
+      await Assert.ThrowsAsync<ArgumentNullException>(() => handler.AppendLogEntryAsync(null!));
     }
 
     [Fact]

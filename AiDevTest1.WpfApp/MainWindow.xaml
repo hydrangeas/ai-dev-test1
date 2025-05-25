@@ -1,9 +1,10 @@
-﻿<Window x:Class="AiDevTest1.WpfApp.MainWindow"
+<Window x:Class="AiDevTest1.WpfApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AiDevTest1.WpfApp"
+        xmlns:viewmodels="clr-namespace:AiDevTest1.WpfApp.ViewModels"
         mc:Ignorable="d"
         Title="AiDevTest1 WPF App"
         Height="450"
@@ -15,10 +16,16 @@
                        FontSize="24"
                        HorizontalAlignment="Center"/>
             <Button Content="ログ書き込み"
+                    Command="{Binding LogWriteCommand}"
                     Margin="0,20,0,0"
                     Padding="10,5"
                     FontSize="16"
                     HorizontalAlignment="Center"/>
+            <TextBlock Text="{Binding IsProcessing, StringFormat='処理中: {0}'}"
+                       Margin="0,10,0,0"
+                       HorizontalAlignment="Center"
+                       FontSize="12"
+                       Foreground="Gray"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using AiDevTest1.Application.Interfaces;
@@ -45,6 +45,10 @@ namespace AiDevTest1.WpfApp
     {
       var authSection = configuration.GetSection("AuthInfo");
       services.Configure<AuthenticationInfo>(authSection);
+
+      // Factories and Handlers
+      services.AddTransient<ILogEntryFactory, AiDevTest1.Application.Factories.LogEntryFactory>();
+      services.AddTransient<ILogFileHandler, LogFileHandler>();
 
       // Services
       services.AddSingleton<ILogWriteService, LogWriteService>();
