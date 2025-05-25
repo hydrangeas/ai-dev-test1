@@ -1,8 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AiDevTest1.Application.Interfaces;
-using System.Windows.Input;
+using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace AiDevTest1.WpfApp.ViewModels
 {
