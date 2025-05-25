@@ -14,6 +14,11 @@ public class LogEntryFactory : ILogEntryFactory
   private static readonly Random Random = Random.Shared;
 
   /// <summary>
+  /// EventTypeの配列（パフォーマンス最適化のためキャッシュ）
+  /// </summary>
+  private static readonly EventType[] CachedEventTypes = Enum.GetValues<EventType>();
+
+  /// <summary>
   /// EventTypeごとのメッセージ定義
   /// </summary>
   private static readonly Dictionary<EventType, string[]> EventMessages = new()
@@ -78,9 +83,8 @@ public class LogEntryFactory : ILogEntryFactory
   /// <returns>生成されたLogEntryオブジェクト</returns>
   public LogEntry CreateLogEntry()
   {
-    // ランダムにEventTypeを選択
-    var eventTypes = Enum.GetValues<EventType>();
-    var randomEventType = eventTypes[Random.Next(eventTypes.Length)];
+    // ランダムにEventTypeを選択（キャッシュされた配列を使用）
+    var randomEventType = CachedEventTypes[Random.Next(CachedEventTypes.Length)];
 
     // 選択されたEventTypeで LogEntry を作成
     return CreateLogEntry(randomEventType);
