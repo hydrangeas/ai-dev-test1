@@ -27,7 +27,7 @@ namespace AiDevTest1.Tests.Converters
       var input = true;
 
       // Act
-      var result = _converter.Convert(input, typeof(Cursor), null, _culture);
+      var result = _converter.Convert(input, typeof(Cursor), null!, _culture);
 
       // Assert
       Assert.Equal(Cursors.Wait, result);
@@ -40,7 +40,7 @@ namespace AiDevTest1.Tests.Converters
       var input = false;
 
       // Act
-      var result = _converter.Convert(input, typeof(Cursor), null, _culture);
+      var result = _converter.Convert(input, typeof(Cursor), null!, _culture);
 
       // Assert
       Assert.Equal(Cursors.Arrow, result);
@@ -50,10 +50,10 @@ namespace AiDevTest1.Tests.Converters
     public void Convert_WithNullValue_ReturnsArrowCursor()
     {
       // Arrange
-      object input = null;
+      object? input = null;
 
       // Act
-      var result = _converter.Convert(input, typeof(Cursor), null, _culture);
+      var result = _converter.Convert(input!, typeof(Cursor), null!, _culture);
 
       // Assert
       Assert.Equal(Cursors.Arrow, result);
@@ -66,7 +66,7 @@ namespace AiDevTest1.Tests.Converters
       var input = "not a bool";
 
       // Act
-      var result = _converter.Convert(input, typeof(Cursor), null, _culture);
+      var result = _converter.Convert(input, typeof(Cursor), null!, _culture);
 
       // Assert
       Assert.Equal(Cursors.Arrow, result);
@@ -80,7 +80,7 @@ namespace AiDevTest1.Tests.Converters
 
       // Act & Assert
       Assert.Throws<NotImplementedException>(() =>
-        _converter.ConvertBack(input, typeof(bool), null, _culture));
+        _converter.ConvertBack(input, typeof(bool), null!, _culture));
     }
   }
 }

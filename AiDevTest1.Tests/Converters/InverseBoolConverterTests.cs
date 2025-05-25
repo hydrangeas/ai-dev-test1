@@ -27,7 +27,7 @@ namespace AiDevTest1.Tests.Converters
       var input = true;
 
       // Act
-      var result = _converter.Convert(input, typeof(bool), null, _culture);
+      var result = _converter.Convert(input, typeof(bool), null!, _culture);
 
       // Assert
       Assert.Equal(false, result);
@@ -40,7 +40,7 @@ namespace AiDevTest1.Tests.Converters
       var input = false;
 
       // Act
-      var result = _converter.Convert(input, typeof(bool), null, _culture);
+      var result = _converter.Convert(input, typeof(bool), null!, _culture);
 
       // Assert
       Assert.Equal(true, result);
@@ -50,10 +50,10 @@ namespace AiDevTest1.Tests.Converters
     public void Convert_WithNullValue_ReturnsDoNothing()
     {
       // Arrange
-      object input = null;
+      object? input = null;
 
       // Act
-      var result = _converter.Convert(input, typeof(bool), null, _culture);
+      var result = _converter.Convert(input!, typeof(bool), null!, _culture);
 
       // Assert
       Assert.Equal(Binding.DoNothing, result);
@@ -66,7 +66,7 @@ namespace AiDevTest1.Tests.Converters
       var input = "not a bool";
 
       // Act
-      var result = _converter.Convert(input, typeof(bool), null, _culture);
+      var result = _converter.Convert(input, typeof(bool), null!, _culture);
 
       // Assert
       Assert.Equal(Binding.DoNothing, result);
@@ -79,7 +79,7 @@ namespace AiDevTest1.Tests.Converters
       var input = true;
 
       // Act
-      var result = _converter.ConvertBack(input, typeof(bool), null, _culture);
+      var result = _converter.ConvertBack(input, typeof(bool), null!, _culture);
 
       // Assert
       Assert.Equal(false, result);
@@ -92,7 +92,7 @@ namespace AiDevTest1.Tests.Converters
       var input = false;
 
       // Act
-      var result = _converter.ConvertBack(input, typeof(bool), null, _culture);
+      var result = _converter.ConvertBack(input, typeof(bool), null!, _culture);
 
       // Assert
       Assert.Equal(true, result);
