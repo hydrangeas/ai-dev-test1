@@ -11,7 +11,7 @@ public class LogEntryFactory : ILogEntryFactory
   /// <summary>
   /// ランダム選択用のRandomインスタンス
   /// </summary>
-  private static readonly Random Random = new();
+  private static readonly Random Random = Random.Shared;
 
   /// <summary>
   /// EventTypeごとのメッセージ定義
