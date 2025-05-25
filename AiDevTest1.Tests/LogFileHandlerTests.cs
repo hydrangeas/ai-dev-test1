@@ -1,3 +1,4 @@
+using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Infrastructure.Services;
 using System;
 using System.IO;
@@ -11,7 +12,7 @@ namespace AiDevTest1.Tests
     public void GetCurrentLogFilePath_ShouldReturnValidPath()
     {
       // Arrange
-      var handler = new LogFileHandler();
+      ILogFileHandler handler = new LogFileHandler();
 
       // Act
       var filePath = handler.GetCurrentLogFilePath();
@@ -27,7 +28,7 @@ namespace AiDevTest1.Tests
     public void GetCurrentLogFilePath_ShouldReturnCorrectDateFormat()
     {
       // Arrange
-      var handler = new LogFileHandler();
+      ILogFileHandler handler = new LogFileHandler();
 
       // Act
       var filePath = handler.GetCurrentLogFilePath();
@@ -47,7 +48,7 @@ namespace AiDevTest1.Tests
     public void GetCurrentLogFilePath_ShouldReturnPathInBaseDirectory()
     {
       // Arrange
-      var handler = new LogFileHandler();
+      ILogFileHandler handler = new LogFileHandler();
       var expectedBaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
       // Act

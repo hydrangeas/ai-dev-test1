@@ -11,7 +11,7 @@ namespace AiDevTest1.Infrastructure.Services
     public string GetCurrentLogFilePath()
     {
       // JST基準で現在の日付を取得
-      var jstNow = TimeZoneInfo.ConvertTime(DateTime.Now, JstTimeZone);
+      var jstNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, JstTimeZone);
 
       // yyyy-MM-dd.log形式でファイル名を生成
       var fileName = $"{jstNow:yyyy-MM-dd}.log";
