@@ -1,5 +1,6 @@
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
+using AiDevTest1.Domain.ValueObjects;
 using AiDevTest1.Infrastructure.Services;
 using FluentAssertions;
 using Moq;
@@ -76,34 +77,56 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WithValidWorkflow_ReturnsSuccess()
   {
     // Arrange
-    var logFilePath = "2023-12-25.log";
+    // 実際のファイルを作成してテスト
+    var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+    Directory.CreateDirectory(tempDirectory);
+    var tempFilePath = Path.Combine(tempDirectory, "2023-12-25.log");
     var fileContent = "test log content"u8.ToArray();
-    var sasUri = "https://test.blob.core.windows.net/logs/2023-12-25.log?sas=token";
-    var correlationId = "test-correlation-id";
+    await File.WriteAllBytesAsync(tempFilePath, fileContent);
 
-    _mockLogFileHandler
-        .Setup(x => x.GetCurrentLogFilePath())
-        .Returns(logFilePath);
+    try
+    {
+      var logFilePath = new LogFilePath(tempFilePath);
+      var sasUri = "https://test.blob.core.windows.net/logs/2023-12-25.log?sas=token";
+      var correlationId = "test-correlation-id";
 
-    // ファイルが存在することをシミュレート（File.Existsのモック化は困難なため、実際のファイルを使用しない）
-    // この部分は統合テストで実際のファイルを使用してテストする
+      _mockLogFileHandler
+          .Setup(x => x.GetCurrentLogFilePath())
+          .Returns(logFilePath);
 
-    _mockIoTHubClient
-        .Setup(x => x.GetFileUploadSasUriAsync("2023-12-25.log"))
-        .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
+      _mockIoTHubClient
+          .Setup(x => x.GetFileUploadSasUriAsync("2023-12-25.log"))
+          .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
 
-    _mockIoTHubClient
-        .Setup(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()))
-        .ReturnsAsync(UploadToBlobResult.Success());
+      _mockIoTHubClient
+          .Setup(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()))
+          .ReturnsAsync(UploadToBlobResult.Success());
 
-    _mockIoTHubClient
-        .Setup(x => x.NotifyFileUploadCompleteAsync(correlationId, true))
-        .ReturnsAsync(Result.Success());
+      _mockIoTHubClient
+          .Setup(x => x.NotifyFileUploadCompleteAsync(correlationId, true))
+          .ReturnsAsync(Result.Success());
 
-    // Act & Assert
-    // このテストは実際のファイルシステムに依存するため、統合テストで実装するのがより適切
-    // ここでは依存関係のセットアップのみをテストする
-    _mockLogFileHandler.Verify(x => x.GetCurrentLogFilePath(), Times.Never);
+      // Act
+      var result = await _service.UploadLogFileAsync();
+
+      // Assert
+      result.Should().NotBeNull();
+      result.IsSuccess.Should().BeTrue();
+      result.IsFailure.Should().BeFalse();
+
+      _mockLogFileHandler.Verify(x => x.GetCurrentLogFilePath(), Times.Once);
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync("2023-12-25.log"), Times.Once);
+      _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
+      _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, true), Times.Once);
+    }
+    finally
+    {
+      // Cleanup
+      if (Directory.Exists(tempDirectory))
+      {
+        Directory.Delete(tempDirectory, true);
+      }
+    }
   }
 
   /// <summary>
@@ -113,11 +136,13 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenFileDoesNotExist_ReturnsFailure()
   {
     // Arrange
-    var nonExistentFilePath = Path.Combine(Path.GetTempPath(), "non-existent-file.log");
+    var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+    var nonExistentFilePath = Path.Combine(tempDirectory, "non-existent-file.log");
+    var logFilePath = new LogFilePath(nonExistentFilePath);
 
     _mockLogFileHandler
         .Setup(x => x.GetCurrentLogFilePath())
-        .Returns(nonExistentFilePath);
+        .Returns(logFilePath);
 
     // Act
     var result = await _service.UploadLogFileAsync();
@@ -147,9 +172,10 @@ public class FileUploadServiceTests
 
     try
     {
+      var logFilePath = new LogFilePath(tempFilePath);
       _mockLogFileHandler
           .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(tempFilePath);
+          .Returns(logFilePath);
 
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
@@ -197,9 +223,10 @@ public class FileUploadServiceTests
 
     try
     {
+      var logFilePath = new LogFilePath(tempFilePath);
       _mockLogFileHandler
           .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(tempFilePath);
+          .Returns(logFilePath);
 
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
@@ -247,9 +274,10 @@ public class FileUploadServiceTests
       var sasUri = "https://test.blob.core.windows.net/logs/test.log?sas=token";
       var correlationId = "test-correlation-id";
 
+      var logFilePath = new LogFilePath(tempFilePath);
       _mockLogFileHandler
           .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(tempFilePath);
+          .Returns(logFilePath);
 
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
@@ -309,9 +337,10 @@ public class FileUploadServiceTests
       var sasUri = "https://test.blob.core.windows.net/logs/test.log?sas=token";
       var correlationId = "test-correlation-id";
 
+      var logFilePath = new LogFilePath(tempFilePath);
       _mockLogFileHandler
           .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(tempFilePath);
+          .Returns(logFilePath);
 
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
@@ -365,9 +394,10 @@ public class FileUploadServiceTests
       var sasUri = "https://test.blob.core.windows.net/logs/test.log?sas=token";
       var correlationId = "test-correlation-id";
 
+      var logFilePath = new LogFilePath(tempFilePath);
       _mockLogFileHandler
           .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(tempFilePath);
+          .Returns(logFilePath);
 
       _mockIoTHubClient
           .SetupSequence(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
@@ -422,9 +452,10 @@ public class FileUploadServiceTests
       var sasUri = "https://test.blob.core.windows.net/logs/test.log?sas=token";
       var correlationId = "test-correlation-id";
 
+      var logFilePath = new LogFilePath(tempFilePath);
       _mockLogFileHandler
           .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(tempFilePath);
+          .Returns(logFilePath);
 
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
@@ -479,9 +510,10 @@ public class FileUploadServiceTests
       var sasUri = "https://test.blob.core.windows.net/logs/test.log?sas=token";
       var emptyCorrelationId = "";
 
+      var logFilePath = new LogFilePath(tempFilePath);
       _mockLogFileHandler
           .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(tempFilePath);
+          .Returns(logFilePath);
 
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
@@ -528,9 +560,10 @@ public class FileUploadServiceTests
 
     try
     {
+      var logFilePath = new LogFilePath(tempFilePath);
       _mockLogFileHandler
           .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(tempFilePath);
+          .Returns(logFilePath);
 
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
@@ -568,12 +601,14 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenFileReadFails_ReturnsFailure()
   {
     // Arrange
-    var invalidFilePath = Path.Combine(Path.GetTempPath(), "invalid-path", "test.log");
-    // 存在するが読み取れないパスをシミュレート
+    var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+    var invalidFilePath = Path.Combine(tempDirectory, "invalid-path", "test.log");
+    // 存在しないパスをシミュレート
+    var logFilePath = new LogFilePath(invalidFilePath);
 
     _mockLogFileHandler
         .Setup(x => x.GetCurrentLogFilePath())
-        .Returns(invalidFilePath);
+        .Returns(logFilePath);
 
     // Act
     var result = await _service.UploadLogFileAsync();

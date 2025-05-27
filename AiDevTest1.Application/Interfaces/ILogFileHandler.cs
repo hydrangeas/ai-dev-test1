@@ -1,4 +1,5 @@
 using AiDevTest1.Domain.Models;
+using AiDevTest1.Domain.ValueObjects;
 
 namespace AiDevTest1.Application.Interfaces
 {
@@ -16,7 +17,7 @@ namespace AiDevTest1.Application.Interfaces
     /// ログファイルは日付やその他の条件に基づいてローテーションされる可能性があります。
     /// このメソッドは常に現在アクティブなログファイルのパスを返します。
     /// </remarks>
-    string GetCurrentLogFilePath();
+    LogFilePath GetCurrentLogFilePath();
 
     /// <summary>
     /// 指定されたログエントリを現在のログファイルに非同期で追加します。

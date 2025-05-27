@@ -1,5 +1,6 @@
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Domain.Models;
+using AiDevTest1.Domain.ValueObjects;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -27,18 +28,13 @@ namespace AiDevTest1.Infrastructure.Services
     }
 
     /// <inheritdoc/>
-    public string GetCurrentLogFilePath()
+    public LogFilePath GetCurrentLogFilePath()
     {
       // JST基準で現在の日付を取得
       var jstNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _timeZoneInfo);
 
-      // yyyy-MM-dd.log形式でファイル名を生成
-      var fileName = $"{jstNow:yyyy-MM-dd}.log";
-
-      // 指定されたベースディレクトリ直下のパスを生成
-      var filePath = Path.Combine(_baseDirectory, fileName);
-
-      return filePath;
+      // LogFilePath Value Objectを使用してパスを生成
+      return LogFilePath.CreateForDate(_baseDirectory, jstNow);
     }
 
     /// <inheritdoc/>
@@ -53,10 +49,14 @@ namespace AiDevTest1.Infrastructure.Services
         throw new ArgumentNullException(nameof(logEntry));
       }
 
-      var filePath = GetCurrentLogFilePath();
+      var logFilePath = GetCurrentLogFilePath();
       var jsonLine = logEntry.ToJsonLine() + Environment.NewLine;
 
-      await File.AppendAllTextAsync(filePath, jsonLine);
+      // ディレクトリが存在しない場合は作成
+      logFilePath.EnsureDirectoryExists();
+
+      // LogFilePathからstringへの暗黙的な変換を利用
+      await File.AppendAllTextAsync(logFilePath, jsonLine);
     }
   }
 }
