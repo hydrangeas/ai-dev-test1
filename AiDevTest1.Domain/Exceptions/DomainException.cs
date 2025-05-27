@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Serialization;
 
 namespace AiDevTest1.Domain.Exceptions
 {
@@ -6,8 +7,14 @@ namespace AiDevTest1.Domain.Exceptions
   /// ドメイン層で発生する例外の基底クラス。
   /// ビジネスルール違反やドメイン固有のエラーを表現します。
   /// </summary>
+  [Serializable]
   public class DomainException : Exception
   {
+    /// <summary>
+    /// デフォルトのエラーカテゴリ。
+    /// </summary>
+    private const string DefaultCategory = "Domain";
+
     /// <summary>
     /// エラーコード。エラーの種類を識別するために使用します。
     /// </summary>
@@ -23,10 +30,8 @@ namespace AiDevTest1.Domain.Exceptions
     /// </summary>
     /// <param name="message">例外を説明するメッセージ。</param>
     public DomainException(string message)
-        : base(message)
+        : this(message, null, null, null)
     {
-      ErrorCode = GetType().Name.Replace("Exception", string.Empty);
-      Category = "Domain";
     }
 
     /// <summary>
@@ -35,10 +40,8 @@ namespace AiDevTest1.Domain.Exceptions
     /// <param name="message">例外を説明するメッセージ。</param>
     /// <param name="errorCode">エラーコード。</param>
     public DomainException(string message, string errorCode)
-        : base(message)
+        : this(message, errorCode, null, null)
     {
-      ErrorCode = errorCode ?? GetType().Name.Replace("Exception", string.Empty);
-      Category = "Domain";
     }
 
     /// <summary>
@@ -51,7 +54,7 @@ namespace AiDevTest1.Domain.Exceptions
         : base(message)
     {
       ErrorCode = errorCode ?? GetType().Name.Replace("Exception", string.Empty);
-      Category = category ?? "Domain";
+      Category = category ?? DefaultCategory;
     }
 
     /// <summary>
@@ -60,10 +63,8 @@ namespace AiDevTest1.Domain.Exceptions
     /// <param name="message">例外を説明するメッセージ。</param>
     /// <param name="innerException">現在の例外の原因である例外。</param>
     public DomainException(string message, Exception innerException)
-        : base(message, innerException)
+        : this(message, null, null, innerException)
     {
-      ErrorCode = GetType().Name.Replace("Exception", string.Empty);
-      Category = "Domain";
     }
 
     /// <summary>
@@ -73,10 +74,8 @@ namespace AiDevTest1.Domain.Exceptions
     /// <param name="errorCode">エラーコード。</param>
     /// <param name="innerException">現在の例外の原因である例外。</param>
     public DomainException(string message, string errorCode, Exception innerException)
-        : base(message, innerException)
+        : this(message, errorCode, null, innerException)
     {
-      ErrorCode = errorCode ?? GetType().Name.Replace("Exception", string.Empty);
-      Category = "Domain";
     }
 
     /// <summary>
@@ -90,7 +89,33 @@ namespace AiDevTest1.Domain.Exceptions
         : base(message, innerException)
     {
       ErrorCode = errorCode ?? GetType().Name.Replace("Exception", string.Empty);
-      Category = category ?? "Domain";
+      Category = category ?? DefaultCategory;
+    }
+
+    /// <summary>
+    /// シリアル化されたデータから<see cref="DomainException"/>クラスの新しいインスタンスを初期化します。
+    /// </summary>
+    /// <param name="info">シリアル化されたオブジェクトデータを保持するSerializationInfo。</param>
+    /// <param name="context">転送元または転送先に関するコンテキスト情報を含むStreamingContext。</param>
+    protected DomainException(SerializationInfo info, StreamingContext context)
+        : base(info, context)
+    {
+      ErrorCode = info.GetString(nameof(ErrorCode));
+      Category = info.GetString(nameof(Category));
+    }
+
+    /// <summary>
+    /// 例外に関する情報をSerializationInfoに設定します。
+    /// </summary>
+    /// <param name="info">シリアル化されたオブジェクトデータを保持するSerializationInfo。</param>
+    /// <param name="context">転送元または転送先に関するコンテキスト情報を含むStreamingContext。</param>
+    public override void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+      if (info == null) throw new ArgumentNullException(nameof(info));
+
+      info.AddValue(nameof(ErrorCode), ErrorCode);
+      info.AddValue(nameof(Category), Category);
+      base.GetObjectData(info, context);
     }
   }
 }
