@@ -21,11 +21,11 @@ public class Result
   public string? ErrorMessage { get; }
 
   /// <summary>
-  /// プライベートコンストラクタ（ファクトリメソッドからのみ生成可能）
+  /// プロテクトコンストラクタ（ファクトリメソッドおよび派生クラスからのみ生成可能）
   /// </summary>
   /// <param name="isSuccess">成功フラグ</param>
   /// <param name="errorMessage">エラーメッセージ</param>
-  private Result(bool isSuccess, string? errorMessage)
+  protected Result(bool isSuccess, string? errorMessage)
   {
     IsSuccess = isSuccess;
     ErrorMessage = errorMessage;
