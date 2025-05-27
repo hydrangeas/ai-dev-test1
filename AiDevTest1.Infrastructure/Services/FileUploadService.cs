@@ -1,5 +1,6 @@
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
+using AiDevTest1.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,7 +54,7 @@ namespace AiDevTest1.Infrastructure.Services
         }
 
         // 3. blob名を生成 (yyyy-MM-dd.log形式)
-        var blobName = logFilePath.FileName;
+        BlobName blobName = logFilePath.FileName; // 暗黙的な型変換でBlobNameに変換
 
         // 4. リトライロジック付きでアップロード処理を実行
         const int maxRetries = 3;

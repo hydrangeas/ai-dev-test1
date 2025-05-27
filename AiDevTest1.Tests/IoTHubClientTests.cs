@@ -1,4 +1,5 @@
 using AiDevTest1.Application.Models;
+using AiDevTest1.Domain.ValueObjects;
 using AiDevTest1.Infrastructure.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
@@ -111,63 +112,6 @@ public class IoTHubClientTests
     exception.Message.Should().Contain("Failed to create DeviceClient");
   }
 
-  /// <summary>
-  /// GetFileUploadSasUriAsyncでnullのblobNameが渡された場合、失敗結果が返されることをテスト
-  /// </summary>
-  [Fact]
-  public async Task GetFileUploadSasUriAsync_WithNullBlobName_ReturnsFailure()
-  {
-    // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
-
-    using var client = new IoTHubClient(options);
-
-    // Act
-    var result = await client.GetFileUploadSasUriAsync(null!);
-
-    // Assert
-    result.Should().NotBeNull();
-    result.IsSuccess.Should().BeFalse();
-    result.IsFailure.Should().BeTrue();
-    result.ErrorMessage.Should().Be("Blob name cannot be null or empty");
-    result.SasUri.Should().BeNull();
-    result.CorrelationId.Should().BeNull();
-  }
-
-  /// <summary>
-  /// GetFileUploadSasUriAsyncで空のblobNameが渡された場合、失敗結果が返されることをテスト
-  /// </summary>
-  [Theory]
-  [InlineData("")]
-  [InlineData("   ")]
-  public async Task GetFileUploadSasUriAsync_WithEmptyBlobName_ReturnsFailure(string emptyBlobName)
-  {
-    // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
-
-    using var client = new IoTHubClient(options);
-
-    // Act
-    var result = await client.GetFileUploadSasUriAsync(emptyBlobName);
-
-    // Assert
-    result.Should().NotBeNull();
-    result.IsSuccess.Should().BeFalse();
-    result.IsFailure.Should().BeTrue();
-    result.ErrorMessage.Should().Be("Blob name cannot be null or empty");
-    result.SasUri.Should().BeNull();
-    result.CorrelationId.Should().BeNull();
-  }
 
   /// <summary>
   /// Disposeされた後にGetFileUploadSasUriAsyncを呼び出した場合、失敗結果が返されることをテスト
@@ -187,7 +131,7 @@ public class IoTHubClientTests
     client.Dispose();
 
     // Act
-    var result = await client.GetFileUploadSasUriAsync("test.log");
+    var result = await client.GetFileUploadSasUriAsync(new BlobName("test.log"));
 
     // Assert
     result.Should().NotBeNull();
@@ -505,7 +449,7 @@ public class IoTHubClientTests
     var options = Options.Create(authInfo);
 
     using var client = new IoTHubClient(options);
-    var blobName = "2023-12-25.log";
+    var blobName = new BlobName("2023-12-25.log");
 
     // Act
     // このテストは実際のAzure SDKに依存するため、実際の接続エラーが発生することが期待される

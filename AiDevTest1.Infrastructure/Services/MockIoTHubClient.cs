@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
+using AiDevTest1.Domain.ValueObjects;
 
 namespace AiDevTest1.Infrastructure.Services;
 
@@ -30,13 +31,8 @@ public class MockIoTHubClient : IIoTHubClient
   /// </summary>
   /// <param name="blobName">アップロードするファイルのBlob名</param>
   /// <returns>SAS URIと相関IDを含む結果</returns>
-  public Task<SasUriResult> GetFileUploadSasUriAsync(string blobName)
+  public Task<SasUriResult> GetFileUploadSasUriAsync(BlobName blobName)
   {
-    if (string.IsNullOrWhiteSpace(blobName))
-    {
-      return Task.FromResult(SasUriResult.Failure("Blob name cannot be null or empty"));
-    }
-
     if (!_simulateSuccess)
     {
       return Task.FromResult(SasUriResult.Failure(_errorMessage));
@@ -44,7 +40,10 @@ public class MockIoTHubClient : IIoTHubClient
 
     // 成功時のモックデータを生成
     var correlationId = Guid.NewGuid().ToString();
-    var sasUri = $"https://mockstorageaccount.blob.core.windows.net/uploads/{blobName}?sv=2023-01-03&sr=b&sig=mock_signature&se=2024-12-31T23:59:59Z&sp=w";
+    // デバイスIDをモックで使用
+    var mockDeviceId = "mock-device-001";
+    var fullBlobName = blobName.GetFullBlobName(mockDeviceId);
+    var sasUri = $"https://mockstorageaccount.blob.core.windows.net/uploads/{fullBlobName}?sv=2023-01-03&sr=b&sig=mock_signature&se=2024-12-31T23:59:59Z&sp=w";
 
     return Task.FromResult(SasUriResult.Success(sasUri, correlationId));
   }

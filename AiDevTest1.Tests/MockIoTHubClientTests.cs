@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using AiDevTest1.Application.Interfaces;
+using AiDevTest1.Domain.ValueObjects;
 using AiDevTest1.Infrastructure.Services;
 using Xunit;
 
@@ -17,7 +18,7 @@ namespace AiDevTest1.Tests
       var blobName = "test-file.log";
 
       // Act
-      var result = await client.GetFileUploadSasUriAsync(blobName);
+      var result = await client.GetFileUploadSasUriAsync(new BlobName(blobName));
 
       // Assert
       Assert.True(result.IsSuccess);
@@ -25,7 +26,7 @@ namespace AiDevTest1.Tests
       Assert.NotNull(result.SasUri);
       Assert.NotNull(result.CorrelationId);
       Assert.Null(result.ErrorMessage);
-      Assert.Contains(blobName, result.SasUri);
+      Assert.Contains("mock-device-001/" + blobName, result.SasUri); // モックではデバイスIDが付加される
       Assert.True(Guid.TryParse(result.CorrelationId, out _));
     }
 
@@ -38,7 +39,7 @@ namespace AiDevTest1.Tests
       var blobName = "test-file.log";
 
       // Act
-      var result = await client.GetFileUploadSasUriAsync(blobName);
+      var result = await client.GetFileUploadSasUriAsync(new BlobName(blobName));
 
       // Assert
       Assert.False(result.IsSuccess);
@@ -48,25 +49,6 @@ namespace AiDevTest1.Tests
       Assert.Equal(errorMessage, result.ErrorMessage);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public async Task GetFileUploadSasUriAsync_WithInvalidBlobName_ShouldReturnFailure(string? invalidBlobName)
-    {
-      // Arrange
-      IIoTHubClient client = new MockIoTHubClient(simulateSuccess: true);
-
-      // Act
-      var result = await client.GetFileUploadSasUriAsync(invalidBlobName!);
-
-      // Assert
-      Assert.False(result.IsSuccess);
-      Assert.True(result.IsFailure);
-      Assert.Null(result.SasUri);
-      Assert.Null(result.CorrelationId);
-      Assert.Equal("Blob name cannot be null or empty", result.ErrorMessage);
-    }
 
     [Fact]
     public async Task UploadToBlobAsync_WithValidParameters_ShouldReturnSuccess()
@@ -216,7 +198,7 @@ namespace AiDevTest1.Tests
 
       // Act & Assert
       // Step 1: Get SAS URI
-      var sasResult = await client.GetFileUploadSasUriAsync(blobName);
+      var sasResult = await client.GetFileUploadSasUriAsync(new BlobName(blobName));
       Assert.True(sasResult.IsSuccess);
       Assert.NotNull(sasResult.SasUri);
       Assert.NotNull(sasResult.CorrelationId);
@@ -241,7 +223,7 @@ namespace AiDevTest1.Tests
 
       // Act & Assert
       // Step 1: Get SAS URI (should fail)
-      var sasResult = await client.GetFileUploadSasUriAsync(blobName);
+      var sasResult = await client.GetFileUploadSasUriAsync(new BlobName(blobName));
       Assert.False(sasResult.IsSuccess);
       Assert.Equal(errorMessage, sasResult.ErrorMessage);
 
