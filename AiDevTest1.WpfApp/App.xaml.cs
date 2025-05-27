@@ -53,6 +53,7 @@ namespace AiDevTest1.WpfApp
       // Services
       services.AddSingleton<ILogWriteService, LogWriteService>();
       services.AddTransient<IFileUploadService, FileUploadService>();
+      services.AddSingleton<IIoTHubClient, IoTHubClient>();
 
       // ViewModels
       services.AddSingleton<MainWindowViewModel>();
