@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using AiDevTest1.Application.Models;
+using AiDevTest1.Domain.ValueObjects;
 
 namespace AiDevTest1.Application.Interfaces;
 
@@ -13,7 +14,7 @@ public interface IIoTHubClient
   /// </summary>
   /// <param name="blobName">アップロードするファイルのBlob名</param>
   /// <returns>SAS URIと相関IDを含む結果</returns>
-  Task<SasUriResult> GetFileUploadSasUriAsync(string blobName);
+  Task<SasUriResult> GetFileUploadSasUriAsync(BlobName blobName);
 
   /// <summary>
   /// 指定されたSAS URIを使用してファイルをBlobストレージにアップロードします

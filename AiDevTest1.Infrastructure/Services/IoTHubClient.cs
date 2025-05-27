@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
+using AiDevTest1.Domain.ValueObjects;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
 using Microsoft.Extensions.Options;
@@ -60,13 +61,8 @@ public class IoTHubClient : IIoTHubClient, IDisposable
   /// </summary>
   /// <param name="blobName">アップロードするファイルのBlob名</param>
   /// <returns>SAS URIと相関IDを含む結果</returns>
-  public async Task<SasUriResult> GetFileUploadSasUriAsync(string blobName)
+  public async Task<SasUriResult> GetFileUploadSasUriAsync(BlobName blobName)
   {
-    if (string.IsNullOrWhiteSpace(blobName))
-    {
-      return SasUriResult.Failure("Blob name cannot be null or empty");
-    }
-
     if (_disposed)
     {
       return SasUriResult.Failure("IoTHubClient has been disposed");
@@ -75,7 +71,7 @@ public class IoTHubClient : IIoTHubClient, IDisposable
     try
     {
       // デバイスID/ファイル名の形式でBlob名を構築
-      var fullBlobName = $"{_deviceId}/{blobName}";
+      var fullBlobName = blobName.GetFullBlobName(_deviceId);
 
       // Azure IoT Hub SDKを使用してファイルアップロード用のSAS URIを取得
       var fileUploadSasUriRequest = new FileUploadSasUriRequest
