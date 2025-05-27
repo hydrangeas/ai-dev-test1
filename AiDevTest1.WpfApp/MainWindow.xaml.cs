@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -23,5 +24,22 @@ public partial class MainWindow : Window
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = _viewModel;
+    }
+
+    /// <summary>
+    /// ウィンドウが閉じられる前に呼び出されるイベントハンドラー
+    /// </summary>
+    /// <param name="e">キャンセル可能なイベント引数</param>
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        // ViewModelの終了処理を呼び出し
+        var canClose = _viewModel.OnWindowClosing();
+        if (!canClose)
+        {
+            e.Cancel = true;
+            return;
+        }
+
+        base.OnClosing(e);
     }
 }
