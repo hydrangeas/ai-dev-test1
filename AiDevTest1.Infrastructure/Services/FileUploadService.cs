@@ -35,7 +35,7 @@ namespace AiDevTest1.Infrastructure.Services
         // 1. LogFileHandlerからファイルパスを取得
         var logFilePath = _logFileHandler.GetCurrentLogFilePath();
 
-        if (!File.Exists(logFilePath))
+        if (!logFilePath.Exists())
         {
           return Result.Failure($"ログファイルが存在しません: {logFilePath}");
         }
@@ -44,6 +44,7 @@ namespace AiDevTest1.Infrastructure.Services
         byte[] fileContent;
         try
         {
+          // LogFilePathからstringへの暗黙的な変換を利用
           fileContent = await File.ReadAllBytesAsync(logFilePath);
         }
         catch (Exception ex)
@@ -52,8 +53,7 @@ namespace AiDevTest1.Infrastructure.Services
         }
 
         // 3. blob名を生成 (yyyy-MM-dd.log形式)
-        var fileName = Path.GetFileName(logFilePath);
-        var blobName = fileName;
+        var blobName = logFilePath.FileName;
 
         // 4. リトライロジック付きでアップロード処理を実行
         const int maxRetries = 3;

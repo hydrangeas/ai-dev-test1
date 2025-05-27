@@ -1,5 +1,6 @@
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Domain.Models;
+using AiDevTest1.Domain.ValueObjects;
 using AiDevTest1.Infrastructure.Services;
 using System;
 using System.IO;
@@ -17,13 +18,13 @@ namespace AiDevTest1.Tests
       ILogFileHandler handler = new LogFileHandler();
 
       // Act
-      var filePath = handler.GetCurrentLogFilePath();
+      var logFilePath = handler.GetCurrentLogFilePath();
 
       // Assert
-      Assert.NotNull(filePath);
-      Assert.NotEmpty(filePath);
-      Assert.EndsWith(".log", filePath);
-      Assert.True(Path.IsPathFullyQualified(filePath));
+      Assert.NotNull(logFilePath.Value);
+      Assert.NotEmpty(logFilePath.Value);
+      Assert.EndsWith(".log", logFilePath.Value);
+      Assert.True(Path.IsPathFullyQualified(logFilePath.Value));
     }
 
     [Fact]
@@ -33,10 +34,10 @@ namespace AiDevTest1.Tests
       ILogFileHandler handler = new LogFileHandler();
 
       // Act
-      var filePath = handler.GetCurrentLogFilePath();
+      var logFilePath = handler.GetCurrentLogFilePath();
 
       // Assert
-      var fileName = Path.GetFileName(filePath);
+      var fileName = logFilePath.FileName;
 
       // ファイル名がyyyy-MM-dd.log形式であることを確認
       Assert.Matches(@"^\d{4}-\d{2}-\d{2}\.log$", fileName);
@@ -54,10 +55,10 @@ namespace AiDevTest1.Tests
       var expectedBaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
       // Act
-      var filePath = handler.GetCurrentLogFilePath();
+      var logFilePath = handler.GetCurrentLogFilePath();
 
       // Assert
-      var actualDirectory = Path.GetDirectoryName(filePath);
+      var actualDirectory = logFilePath.DirectoryPath;
       Assert.Equal(expectedBaseDirectory.TrimEnd(Path.DirectorySeparatorChar), actualDirectory);
     }
 
@@ -76,10 +77,11 @@ namespace AiDevTest1.Tests
         await handler.AppendLogEntryAsync(logEntry);
 
         // Assert
-        var filePath = handler.GetCurrentLogFilePath();
-        Assert.True(File.Exists(filePath));
+        var logFilePath = handler.GetCurrentLogFilePath();
+        Assert.True(logFilePath.Exists());
 
-        var content = await File.ReadAllTextAsync(filePath);
+        // LogFilePathからstringへの暗黙的な変換を利用
+        var content = await File.ReadAllTextAsync(logFilePath);
         Assert.NotEmpty(content);
         Assert.Contains("Test login event", content);
         Assert.Contains("\"eventType\":\"START\"", content);
@@ -105,16 +107,16 @@ namespace AiDevTest1.Tests
 
       try
       {
-        var filePath = handler.GetCurrentLogFilePath();
-        Assert.False(File.Exists(filePath)); // ファイルが存在しないことを確認
+        var logFilePath = handler.GetCurrentLogFilePath();
+        Assert.False(logFilePath.Exists()); // ファイルが存在しないことを確認
 
         // Act
         await handler.AppendLogEntryAsync(logEntry);
 
         // Assert
-        Assert.True(File.Exists(filePath)); // ファイルが作成されたことを確認
+        Assert.True(logFilePath.Exists()); // ファイルが作成されたことを確認
 
-        var content = await File.ReadAllTextAsync(filePath);
+        var content = await File.ReadAllTextAsync(logFilePath);
         Assert.NotEmpty(content);
         Assert.Contains("Test logout event", content);
       }
@@ -158,8 +160,8 @@ namespace AiDevTest1.Tests
         await handler.AppendLogEntryAsync(logEntry3);
 
         // Assert
-        var filePath = handler.GetCurrentLogFilePath();
-        var content = await File.ReadAllTextAsync(filePath);
+        var logFilePath = handler.GetCurrentLogFilePath();
+        var content = await File.ReadAllTextAsync(logFilePath);
         var lines = content.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
 
         Assert.Equal(3, lines.Length);
