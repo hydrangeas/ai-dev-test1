@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AiDevTest1.Application.Interfaces;
+using AiDevTest1.WpfApp.Helpers;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -67,32 +68,36 @@ namespace AiDevTest1.WpfApp.ViewModels
         // ログエントリの書き込み実行
         var result = await _logWriteService.WriteLogEntryAsync();
 
-        // 結果の処理（今回は成功/失敗のログ出力のみ）
+        // NOTE: issue #18では IDialogService のDI注入が仕様とされていたが、
+        // issue #13のDialogService実装が未完了のため、暫定的に既存のDialogHelperを直接使用
+        // 将来的にはIDialogServiceインターフェースとDI注入に移行することを想定
+
         if (result.IsSuccess)
         {
-          System.Diagnostics.Debug.WriteLine("ログの書き込みが成功しました。");
-
           // ログ書き込み成功時のみファイルアップロードを実行
           var uploadResult = await _fileUploadService.UploadLogFileAsync();
           if (uploadResult.IsSuccess)
           {
-            System.Diagnostics.Debug.WriteLine("ファイルアップロードが成功しました。");
+            // 全処理成功
+            DialogHelper.ShowSuccess("処理が完了しました。");
           }
           else
           {
-            System.Diagnostics.Debug.WriteLine($"ファイルアップロードに失敗しました: {uploadResult.ErrorMessage}");
+            // ファイルアップロード失敗
+            DialogHelper.ShowFailure($"ファイルアップロードに失敗しました: {uploadResult.ErrorMessage}");
           }
         }
         else
         {
-          System.Diagnostics.Debug.WriteLine($"ログの書き込みに失敗しました: {result.ErrorMessage}");
+          // ログ書き込み失敗
+          DialogHelper.ShowFailure($"ログの書き込みに失敗しました: {result.ErrorMessage}");
           // ログ書き込み失敗時はファイルアップロードをスキップ
         }
       }
       catch (Exception ex)
       {
         // 予期しないエラーのハンドリング
-        System.Diagnostics.Debug.WriteLine($"予期しないエラーが発生しました: {ex.Message}");
+        DialogHelper.ShowFailure($"予期しないエラーが発生しました: {ex.Message}");
       }
       finally
       {
