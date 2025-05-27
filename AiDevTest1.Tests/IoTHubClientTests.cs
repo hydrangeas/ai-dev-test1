@@ -66,30 +66,6 @@ public class IoTHubClientTests
     exception.Message.Should().Contain("Connection string is required");
   }
 
-  /// <summary>
-  /// コンストラクタで空のDeviceIdが渡された場合、ArgumentExceptionが発生することをテスト
-  /// </summary>
-  [Theory]
-  [InlineData(null)]
-  [InlineData("")]
-  [InlineData("   ")]
-  public void Constructor_WithInvalidDeviceId_ThrowsArgumentException(string? invalidDeviceId)
-  {
-    // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=test",
-      DeviceId = invalidDeviceId!
-    };
-    var options = Options.Create(authInfo);
-
-    // Act & Assert
-    var exception = Assert.Throws<ArgumentException>(() =>
-        new IoTHubClient(options));
-
-    exception.ParamName.Should().Be("authenticationInfo");
-    exception.Message.Should().Contain("Device ID is required");
-  }
 
   /// <summary>
   /// コンストラクタで無効なConnectionStringが渡された場合、InvalidOperationExceptionが発生することをテスト

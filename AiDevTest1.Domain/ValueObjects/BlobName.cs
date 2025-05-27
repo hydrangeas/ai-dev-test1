@@ -48,14 +48,9 @@ namespace AiDevTest1.Domain.ValueObjects
     /// </summary>
     /// <param name="deviceId">デバイスID</param>
     /// <returns>デバイスID/Blob名の形式の文字列</returns>
-    public string GetFullBlobName(string deviceId)
+    public string GetFullBlobName(DeviceId deviceId)
     {
-      if (string.IsNullOrWhiteSpace(deviceId))
-      {
-        throw new ArgumentException("Device ID cannot be null or empty.", nameof(deviceId));
-      }
-
-      return $"{deviceId}/{Value}";
+      return $"{deviceId.Value}/{Value}";
     }
 
     /// <summary>
