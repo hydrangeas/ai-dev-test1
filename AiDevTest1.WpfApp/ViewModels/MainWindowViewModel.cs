@@ -108,5 +108,35 @@ namespace AiDevTest1.WpfApp.ViewModels
         LogWriteCommand.NotifyCanExecuteChanged();
       }
     }
+
+    /// <summary>
+    /// ウィンドウが閉じられる際の処理を行います
+    /// </summary>
+    /// <returns>ウィンドウを閉じることができる場合はtrue、そうでなければfalse</returns>
+    public bool OnWindowClosing()
+    {
+      // 処理中の場合は終了をブロック
+      if (IsProcessing)
+      {
+        DialogHelper.ShowWarning("処理中のため、終了できません。処理完了後に再度お試しください。");
+        return false;
+      }
+
+      // リソースクリーンアップ処理
+      CleanupResources();
+      return true;
+    }
+
+    /// <summary>
+    /// リソースのクリーンアップ処理を行います
+    /// </summary>
+    private void CleanupResources()
+    {
+      // 現状では特に複雑なリソース管理はないため最小限の実装
+      // 将来的に必要なリソース解放処理をここに追加
+
+      // 例: イベントハンドラーの解除、IDisposableリソースの破棄など
+      // _someDisposableResource?.Dispose();
+    }
   }
 }

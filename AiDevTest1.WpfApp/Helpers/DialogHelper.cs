@@ -24,5 +24,14 @@ namespace AiDevTest1.WpfApp.Helpers
     {
       MessageBox.Show(message, "失敗", MessageBoxButton.OK, MessageBoxImage.Error);
     }
+
+    /// <summary>
+    /// 警告ダイアログを表示します
+    /// </summary>
+    /// <param name="message">表示するメッセージ</param>
+    public static void ShowWarning(string message)
+    {
+      MessageBox.Show(message, "警告", MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
   }
 }
