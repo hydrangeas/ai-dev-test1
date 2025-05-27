@@ -72,17 +72,16 @@ namespace AiDevTest1.WpfApp.ViewModels
         {
           System.Diagnostics.Debug.WriteLine("ログの書き込みが成功しました。");
 
-          // TODO: #15, #16 実装後にファイルアップロード処理を追加
           // ログ書き込み成功時のみファイルアップロードを実行
-          // var uploadResult = await _fileUploadService.UploadLogFileAsync();
-          // if (uploadResult.IsSuccess)
-          // {
-          //   System.Diagnostics.Debug.WriteLine("ファイルアップロードが成功しました。");
-          // }
-          // else
-          // {
-          //   System.Diagnostics.Debug.WriteLine($"ファイルアップロードに失敗しました: {uploadResult.ErrorMessage}");
-          // }
+          var uploadResult = await _fileUploadService.UploadLogFileAsync();
+          if (uploadResult.IsSuccess)
+          {
+            System.Diagnostics.Debug.WriteLine("ファイルアップロードが成功しました。");
+          }
+          else
+          {
+            System.Diagnostics.Debug.WriteLine($"ファイルアップロードに失敗しました: {uploadResult.ErrorMessage}");
+          }
         }
         else
         {
