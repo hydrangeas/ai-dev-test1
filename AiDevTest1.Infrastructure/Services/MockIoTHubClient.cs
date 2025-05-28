@@ -41,7 +41,7 @@ public class MockIoTHubClient : IIoTHubClient
     // 成功時のモックデータを生成
     var correlationId = Guid.NewGuid().ToString();
     // デバイスIDをモックで使用
-    var mockDeviceId = "mock-device-001";
+    DeviceId mockDeviceId = "mock-device-001";
     var fullBlobName = blobName.GetFullBlobName(mockDeviceId);
     var sasUri = $"https://mockstorageaccount.blob.core.windows.net/uploads/{fullBlobName}?sv=2023-01-03&sr=b&sig=mock_signature&se=2024-12-31T23:59:59Z&sp=w";
 

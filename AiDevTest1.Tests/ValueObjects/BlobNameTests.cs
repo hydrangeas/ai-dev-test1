@@ -176,32 +176,17 @@ namespace AiDevTest1.Tests.ValueObjects
     [InlineData("device123", "test.log", "device123/test.log")]
     [InlineData("IoT-Device-001", "2023-12-25.log", "IoT-Device-001/2023-12-25.log")]
     [InlineData("sensor_01", "data/readings.csv", "sensor_01/data/readings.csv")]
-    public void GetFullBlobName_WithValidDeviceId_ShouldReturnFullPath(string deviceId, string fileName, string expected)
+    public void GetFullBlobName_WithValidDeviceId_ShouldReturnFullPath(string deviceIdValue, string fileName, string expected)
     {
       // Arrange
       var blobName = new BlobName(fileName);
+      DeviceId deviceId = deviceIdValue;
 
       // Act
       var fullName = blobName.GetFullBlobName(deviceId);
 
       // Assert
       Assert.Equal(expected, fullName);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("   ")]
-    public void GetFullBlobName_WithNullOrEmptyDeviceId_ShouldThrowArgumentException(string? invalidDeviceId)
-    {
-      // Arrange
-      var blobName = new BlobName("test.log");
-
-      // Act & Assert
-      var ex = Assert.Throws<ArgumentException>(() => blobName.GetFullBlobName(invalidDeviceId!));
-      Assert.Contains("Device ID cannot be null or empty", ex.Message);
-      Assert.Equal("deviceId", ex.ParamName);
     }
 
     #endregion

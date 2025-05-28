@@ -15,7 +15,7 @@ namespace AiDevTest1.Infrastructure.Services;
 public class IoTHubClient : IIoTHubClient, IDisposable
 {
   private readonly DeviceClient _deviceClient;
-  private readonly string _deviceId;
+  private readonly DeviceId _deviceId;
   private bool _disposed = false;
 
   /// <summary>
@@ -34,11 +34,6 @@ public class IoTHubClient : IIoTHubClient, IDisposable
     if (string.IsNullOrWhiteSpace(authInfo.ConnectionString))
     {
       throw new ArgumentException("Connection string is required", nameof(authenticationInfo));
-    }
-
-    if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
-    {
-      throw new ArgumentException("Device ID is required", nameof(authenticationInfo));
     }
 
     _deviceId = authInfo.DeviceId;

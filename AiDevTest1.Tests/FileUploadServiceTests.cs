@@ -95,7 +95,7 @@ public class FileUploadServiceTests
           .Returns(logFilePath);
 
       _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync("2023-12-25.log"))
+          .Setup(x => x.GetFileUploadSasUriAsync(new BlobName("2023-12-25.log")))
           .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
 
       _mockIoTHubClient
@@ -115,7 +115,7 @@ public class FileUploadServiceTests
       result.IsFailure.Should().BeFalse();
 
       _mockLogFileHandler.Verify(x => x.GetCurrentLogFilePath(), Times.Once);
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync("2023-12-25.log"), Times.Once);
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(new BlobName("2023-12-25.log")), Times.Once);
       _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
       _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, true), Times.Once);
     }
@@ -156,7 +156,7 @@ public class FileUploadServiceTests
     result.ErrorMessage.Should().Contain(nonExistentFilePath);
 
     _mockLogFileHandler.Verify(x => x.GetCurrentLogFilePath(), Times.Once);
-    _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Never);
+    _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Never);
   }
 
   /// <summary>
@@ -166,7 +166,8 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenSasUriFailsAllRetries_ReturnsFailureWithAllAttempts()
   {
     // Arrange
-    var tempFilePath = Path.GetTempFileName();
+    var tempDirectory = Path.GetTempPath();
+    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
     var fileContent = "test content"u8.ToArray();
     await File.WriteAllBytesAsync(tempFilePath, fileContent);
 
@@ -178,7 +179,7 @@ public class FileUploadServiceTests
           .Returns(logFilePath);
 
       _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
+          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ReturnsAsync(SasUriResult.Failure("SAS URI generation failed"));
 
       // Act
@@ -196,7 +197,7 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().Contain("SAS URI generation failed");
 
       // 3回のリトライが実行されたことを確認
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Exactly(3));
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(3));
       _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Never);
       _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
     }
@@ -217,7 +218,8 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenSasUriIsEmpty_ReturnsFailureAfterRetries()
   {
     // Arrange
-    var tempFilePath = Path.GetTempFileName();
+    var tempDirectory = Path.GetTempPath();
+    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
     var fileContent = "test content"u8.ToArray();
     await File.WriteAllBytesAsync(tempFilePath, fileContent);
 
@@ -229,7 +231,7 @@ public class FileUploadServiceTests
           .Returns(logFilePath);
 
       _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
+          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ReturnsAsync(SasUriResult.Success("", "correlation-id")); // 空のSAS URI
 
       // Act
@@ -245,7 +247,7 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().Contain("試行2: SAS URIが空");
       result.ErrorMessage.Should().Contain("試行3: SAS URIが空");
 
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Exactly(3));
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(3));
       _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Never);
     }
     finally
@@ -265,7 +267,8 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenBlobUploadFailsAllRetries_ReturnsFailureWithAllAttempts()
   {
     // Arrange
-    var tempFilePath = Path.GetTempFileName();
+    var tempDirectory = Path.GetTempPath();
+    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
     var fileContent = "test content"u8.ToArray();
     await File.WriteAllBytesAsync(tempFilePath, fileContent);
 
@@ -280,7 +283,7 @@ public class FileUploadServiceTests
           .Returns(logFilePath);
 
       _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
+          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
 
       _mockIoTHubClient
@@ -306,7 +309,7 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().Contain("Blob upload failed");
 
       // 3回のリトライが実行されたことを確認
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Exactly(3));
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(3));
       _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Exactly(3));
       // 最後の試行で失敗通知が送信されることを確認
       _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, false), Times.Once);
@@ -328,7 +331,8 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenFirstAttemptSucceeds_DoesNotRetry()
   {
     // Arrange
-    var tempFilePath = Path.GetTempFileName();
+    var tempDirectory = Path.GetTempPath();
+    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
     var fileContent = "test content"u8.ToArray();
     await File.WriteAllBytesAsync(tempFilePath, fileContent);
 
@@ -343,7 +347,7 @@ public class FileUploadServiceTests
           .Returns(logFilePath);
 
       _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
+          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
 
       _mockIoTHubClient
@@ -364,7 +368,7 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().BeNull();
 
       // 1回のみ実行されたことを確認（リトライなし）
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Once);
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Once);
       _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
       _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, true), Times.Once);
     }
@@ -385,7 +389,8 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenSecondAttemptSucceeds_RetriesOnceAndSucceeds()
   {
     // Arrange
-    var tempFilePath = Path.GetTempFileName();
+    var tempDirectory = Path.GetTempPath();
+    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
     var fileContent = "test content"u8.ToArray();
     await File.WriteAllBytesAsync(tempFilePath, fileContent);
 
@@ -400,7 +405,7 @@ public class FileUploadServiceTests
           .Returns(logFilePath);
 
       _mockIoTHubClient
-          .SetupSequence(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
+          .SetupSequence(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ReturnsAsync(SasUriResult.Failure("First attempt failed"))
           .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
 
@@ -422,7 +427,7 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().BeNull();
 
       // 2回実行されたことを確認
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Exactly(2));
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(2));
       _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
       _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, true), Times.Once);
     }
@@ -443,7 +448,8 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenNotificationFails_ReturnsFailure()
   {
     // Arrange
-    var tempFilePath = Path.GetTempFileName();
+    var tempDirectory = Path.GetTempPath();
+    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
     var fileContent = "test content"u8.ToArray();
     await File.WriteAllBytesAsync(tempFilePath, fileContent);
 
@@ -458,7 +464,7 @@ public class FileUploadServiceTests
           .Returns(logFilePath);
 
       _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
+          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
 
       _mockIoTHubClient
@@ -480,7 +486,7 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().Contain("アップロード完了通知に失敗しました");
       result.ErrorMessage.Should().Contain("Notification failed");
 
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Once);
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Once);
       _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
       _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, true), Times.Once);
     }
@@ -501,7 +507,8 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenCorrelationIdIsEmpty_ReturnsFailure()
   {
     // Arrange
-    var tempFilePath = Path.GetTempFileName();
+    var tempDirectory = Path.GetTempPath();
+    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
     var fileContent = "test content"u8.ToArray();
     await File.WriteAllBytesAsync(tempFilePath, fileContent);
 
@@ -516,7 +523,7 @@ public class FileUploadServiceTests
           .Returns(logFilePath);
 
       _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
+          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ReturnsAsync(SasUriResult.Success(sasUri, emptyCorrelationId));
 
       _mockIoTHubClient
@@ -533,7 +540,7 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().NotBeNull();
       result.ErrorMessage.Should().Contain("相関IDが空です");
 
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Once);
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Once);
       _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
       _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
     }
@@ -554,7 +561,8 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WhenUnexpectedExceptionOccurs_ReturnsFailure()
   {
     // Arrange
-    var tempFilePath = Path.GetTempFileName();
+    var tempDirectory = Path.GetTempPath();
+    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
     var fileContent = "test content"u8.ToArray();
     await File.WriteAllBytesAsync(tempFilePath, fileContent);
 
@@ -566,7 +574,7 @@ public class FileUploadServiceTests
           .Returns(logFilePath);
 
       _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()))
+          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ThrowsAsync(new InvalidOperationException("Unexpected error"));
 
       // Act
@@ -582,7 +590,7 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().Contain("試行2: 予期しないエラー - Unexpected error");
       result.ErrorMessage.Should().Contain("試行3: 予期しないエラー - Unexpected error");
 
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Exactly(3));
+      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(3));
     }
     finally
     {
@@ -621,6 +629,6 @@ public class FileUploadServiceTests
     result.ErrorMessage.Should().Contain("ログファイルが存在しません");
 
     _mockLogFileHandler.Verify(x => x.GetCurrentLogFilePath(), Times.Once);
-    _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<string>()), Times.Never);
+    _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Never);
   }
 }
