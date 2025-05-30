@@ -66,7 +66,7 @@ namespace AiDevTest1.Tests
 
       // Act & Assert
       var exception = await Assert.ThrowsAsync<ArgumentNullException>(() =>
-          retryPolicy.ExecuteAsync<string>(null));
+          retryPolicy.ExecuteAsync<string>(null!));
 
       Assert.Equal("operation", exception.ParamName);
     }
@@ -163,7 +163,7 @@ namespace AiDevTest1.Tests
 
       // Act & Assert
       var exception = await Assert.ThrowsAsync<ArgumentNullException>(() =>
-          retryPolicy.ExecuteAsync((Func<Task>)null));
+          retryPolicy.ExecuteAsync((Func<Task>)null!));
 
       Assert.Equal("operation", exception.ParamName);
     }
@@ -202,7 +202,7 @@ namespace AiDevTest1.Tests
 
       // Act & Assert
       var exception = Assert.Throws<ArgumentNullException>(() =>
-          retryPolicy.AddRetryableException(null));
+          retryPolicy.AddRetryableException(null!));
 
       Assert.Equal("exceptionType", exception.ParamName);
     }

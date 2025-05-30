@@ -118,7 +118,7 @@ namespace AiDevTest1.Tests
       const string message = "Test domain exception";
 
       // Act
-      var exception = new DomainException(message, (string)null);
+      var exception = new DomainException(message, (string?)null);
 
       // Assert
       Assert.Equal("Domain", exception.ErrorCode);
@@ -132,7 +132,7 @@ namespace AiDevTest1.Tests
       const string errorCode = "TEST_ERROR";
 
       // Act
-      var exception = new DomainException(message, errorCode, (string)null);
+      var exception = new DomainException(message, errorCode, (string?)null);
 
       // Assert
       Assert.Equal("Domain", exception.Category);

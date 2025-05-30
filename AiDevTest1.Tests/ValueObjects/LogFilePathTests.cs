@@ -31,10 +31,10 @@ namespace AiDevTest1.Tests.ValueObjects
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Constructor_WithNullOrEmptyPath_ThrowsDomainException(string invalidPath)
+    public void Constructor_WithNullOrEmptyPath_ThrowsDomainException(string? invalidPath)
     {
       // Act & Assert
-      var exception = Assert.Throws<DomainException>(() => new LogFilePath(invalidPath));
+      var exception = Assert.Throws<DomainException>(() => new LogFilePath(invalidPath!));
       exception.Message.Should().Contain("ログファイルパスが空です");
       exception.ErrorCode.Should().Be("LogFilePath.Empty");
     }
@@ -251,13 +251,13 @@ namespace AiDevTest1.Tests.ValueObjects
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void CreateForDate_WithInvalidBaseDirectory_ThrowsArgumentException(string invalidDirectory)
+    public void CreateForDate_WithInvalidBaseDirectory_ThrowsArgumentException(string? invalidDirectory)
     {
       // Arrange
       var date = DateTime.Now;
 
       // Act & Assert
-      var exception = Assert.Throws<ArgumentException>(() => LogFilePath.CreateForDate(invalidDirectory, date));
+      var exception = Assert.Throws<ArgumentException>(() => LogFilePath.CreateForDate(invalidDirectory!, date));
       exception.Message.Should().Contain("ベースディレクトリが指定されていません");
       exception.ParamName.Should().Be("baseDirectory");
     }
