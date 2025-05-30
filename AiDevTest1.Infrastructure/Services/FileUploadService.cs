@@ -1,6 +1,8 @@
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
+using AiDevTest1.Infrastructure.Configuration;
 using AiDevTest1.Domain.ValueObjects;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,16 +14,13 @@ namespace AiDevTest1.Infrastructure.Services
   {
     private readonly IIoTHubClient _ioTHubClient;
     private readonly ILogFileHandler _logFileHandler;
-    private readonly AuthenticationInfo _authInfo;
 
     public FileUploadService(
         IIoTHubClient ioTHubClient,
-        ILogFileHandler logFileHandler,
-        AuthenticationInfo authInfo)
+        ILogFileHandler logFileHandler)
     {
       _ioTHubClient = ioTHubClient ?? throw new ArgumentNullException(nameof(ioTHubClient));
       _logFileHandler = logFileHandler ?? throw new ArgumentNullException(nameof(logFileHandler));
-      _authInfo = authInfo ?? throw new ArgumentNullException(nameof(authInfo));
     }
 
     /// <summary>

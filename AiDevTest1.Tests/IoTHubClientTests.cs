@@ -1,4 +1,4 @@
-using AiDevTest1.Application.Models;
+using AiDevTest1.Infrastructure.Configuration;
 using AiDevTest1.Domain.ValueObjects;
 using AiDevTest1.Infrastructure.Services;
 using FluentAssertions;
@@ -13,32 +13,32 @@ namespace AiDevTest1.Tests;
 public class IoTHubClientTests
 {
   /// <summary>
-  /// コンストラクタでnullのauthenticationInfoが渡された場合、ArgumentNullExceptionが発生することをテスト
+  /// コンストラクタでnullのioTHubConfigurationが渡された場合、ArgumentNullExceptionが発生することをテスト
   /// </summary>
   [Fact]
-  public void Constructor_WithNullAuthenticationInfo_ThrowsArgumentNullException()
+  public void Constructor_WithNullIoTHubConfiguration_ThrowsArgumentNullException()
   {
     // Act & Assert
     var exception = Assert.Throws<ArgumentNullException>(() =>
-        new IoTHubClient((IOptions<AuthenticationInfo>)null!));
+        new IoTHubClient((IOptions<IoTHubConfiguration>)null!));
 
-    exception.ParamName.Should().Be("authenticationInfo");
+    exception.ParamName.Should().Be("iotHubConfiguration");
   }
 
   /// <summary>
-  /// コンストラクタでauthenticationInfo.Valueがnullの場合、ArgumentNullExceptionが発生することをテスト
+  /// コンストラクタでioTHubConfiguration.Valueがnullの場合、ArgumentNullExceptionが発生することをテスト
   /// </summary>
   [Fact]
-  public void Constructor_WithNullAuthenticationInfoValue_ThrowsArgumentNullException()
+  public void Constructor_WithNullIoTHubConfigurationValue_ThrowsArgumentNullException()
   {
     // Arrange
-    var options = Options.Create<AuthenticationInfo>(null!);
+    var options = Options.Create<IoTHubConfiguration>(null!);
 
     // Act & Assert
     var exception = Assert.Throws<ArgumentNullException>(() =>
         new IoTHubClient(options));
 
-    exception.ParamName.Should().Be("authenticationInfo");
+    exception.ParamName.Should().Be("iotHubConfiguration");
   }
 
   /// <summary>
@@ -50,22 +50,13 @@ public class IoTHubClientTests
   [InlineData("   ")]
   public void Constructor_WithInvalidConnectionString_ThrowsArgumentException(string? invalidConnectionString)
   {
-    // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = invalidConnectionString!,
-      DeviceId = "valid-device-id"
-    };
-    var options = Options.Create(authInfo);
-
     // Act & Assert
     var exception = Assert.Throws<ArgumentException>(() =>
-        new IoTHubClient(options));
+        new IoTHubConfiguration(invalidConnectionString!, new DeviceId("valid-device-id")));
 
-    exception.ParamName.Should().Be("authenticationInfo");
-    exception.Message.Should().Contain("Connection string is required");
+    exception.ParamName.Should().Be("connectionString");
+    exception.Message.Should().Contain("接続文字列が空です");
   }
-
 
   /// <summary>
   /// コンストラクタで無効なConnectionStringが渡された場合、InvalidOperationExceptionが発生することをテスト
@@ -74,12 +65,8 @@ public class IoTHubClientTests
   public void Constructor_WithInvalidConnectionStringFormat_ThrowsInvalidOperationException()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "invalid-connection-string",
-      DeviceId = "valid-device-id"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration("invalid-connection-string", new DeviceId("valid-device-id"));
+    var options = Options.Create(config);
 
     // Act & Assert
     var exception = Assert.Throws<InvalidOperationException>(() =>
@@ -88,7 +75,6 @@ public class IoTHubClientTests
     exception.Message.Should().Contain("Failed to create DeviceClient");
   }
 
-
   /// <summary>
   /// Disposeされた後にGetFileUploadSasUriAsyncを呼び出した場合、失敗結果が返されることをテスト
   /// </summary>
@@ -96,12 +82,10 @@ public class IoTHubClientTests
   public async Task GetFileUploadSasUriAsync_AfterDispose_ReturnsFailure()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     var client = new IoTHubClient(options);
     client.Dispose();
@@ -125,12 +109,10 @@ public class IoTHubClientTests
   public async Task UploadToBlobAsync_WithNullSasUri_ReturnsFailure()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     using var client = new IoTHubClient(options);
     var fileContent = "test content"u8.ToArray();
@@ -154,12 +136,10 @@ public class IoTHubClientTests
   public async Task UploadToBlobAsync_WithEmptySasUri_ReturnsFailure(string emptySasUri)
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     using var client = new IoTHubClient(options);
     var fileContent = "test content"u8.ToArray();
@@ -181,12 +161,10 @@ public class IoTHubClientTests
   public async Task UploadToBlobAsync_WithNullFileContent_ReturnsFailure()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     using var client = new IoTHubClient(options);
     var sasUri = "https://test.blob.core.windows.net/logs/test.log";
@@ -208,12 +186,10 @@ public class IoTHubClientTests
   public async Task UploadToBlobAsync_WithEmptyFileContent_ReturnsFailure()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     using var client = new IoTHubClient(options);
     var sasUri = "https://test.blob.core.windows.net/logs/test.log";
@@ -236,12 +212,10 @@ public class IoTHubClientTests
   public async Task UploadToBlobAsync_AfterDispose_ReturnsFailure()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     var client = new IoTHubClient(options);
     client.Dispose();
@@ -266,12 +240,10 @@ public class IoTHubClientTests
   public async Task NotifyFileUploadCompleteAsync_WithNullCorrelationId_ReturnsFailure()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     using var client = new IoTHubClient(options);
 
@@ -294,12 +266,10 @@ public class IoTHubClientTests
   public async Task NotifyFileUploadCompleteAsync_WithEmptyCorrelationId_ReturnsFailure(string emptyCorrelationId)
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     using var client = new IoTHubClient(options);
 
@@ -320,12 +290,10 @@ public class IoTHubClientTests
   public async Task NotifyFileUploadCompleteAsync_AfterDispose_ReturnsFailure()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     var client = new IoTHubClient(options);
     client.Dispose();
@@ -349,12 +317,10 @@ public class IoTHubClientTests
   public void Dispose_CalledMultipleTimes_DoesNotThrowException()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     var client = new IoTHubClient(options);
 
@@ -372,12 +338,10 @@ public class IoTHubClientTests
   public void UsingStatement_DisposesProperly()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     // Act & Assert
     using (var client = new IoTHubClient(options))
@@ -395,12 +359,10 @@ public class IoTHubClientTests
   public void Constructor_WithValidParameters_CreatesInstance()
   {
     // Arrange
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = "test-device"
-    };
-    var options = Options.Create(authInfo);
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        new DeviceId("test-device"));
+    var options = Options.Create(config);
 
     // Act
     using var client = new IoTHubClient(options);
@@ -416,13 +378,11 @@ public class IoTHubClientTests
   public async Task GetFileUploadSasUriAsync_WithValidBlobName_IncludesDeviceIdInBlobName()
   {
     // Arrange
-    var deviceId = "test-device-123";
-    var authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
-      DeviceId = deviceId
-    };
-    var options = Options.Create(authInfo);
+    var deviceId = new DeviceId("test-device-123");
+    var config = new IoTHubConfiguration(
+        "HostName=test.azure-devices.net;DeviceId=test;SharedAccessKey=dGVzdA==",
+        deviceId);
+    var options = Options.Create(config);
 
     using var client = new IoTHubClient(options);
     var blobName = new BlobName("2023-12-25.log");

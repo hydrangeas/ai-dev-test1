@@ -16,19 +16,13 @@ public class FileUploadServiceTests
 {
   private readonly Mock<IIoTHubClient> _mockIoTHubClient;
   private readonly Mock<ILogFileHandler> _mockLogFileHandler;
-  private readonly AuthenticationInfo _authInfo;
   private readonly FileUploadService _service;
 
   public FileUploadServiceTests()
   {
     _mockIoTHubClient = new Mock<IIoTHubClient>();
     _mockLogFileHandler = new Mock<ILogFileHandler>();
-    _authInfo = new AuthenticationInfo
-    {
-      ConnectionString = "test-connection-string",
-      DeviceId = "test-device-id"
-    };
-    _service = new FileUploadService(_mockIoTHubClient.Object, _mockLogFileHandler.Object, _authInfo);
+    _service = new FileUploadService(_mockIoTHubClient.Object, _mockLogFileHandler.Object);
   }
 
   /// <summary>
@@ -39,7 +33,7 @@ public class FileUploadServiceTests
   {
     // Act & Assert
     var exception = Assert.Throws<ArgumentNullException>(() =>
-        new FileUploadService(null!, _mockLogFileHandler.Object, _authInfo));
+        new FileUploadService(null!, _mockLogFileHandler.Object));
 
     exception.ParamName.Should().Be("ioTHubClient");
   }
@@ -52,22 +46,9 @@ public class FileUploadServiceTests
   {
     // Act & Assert
     var exception = Assert.Throws<ArgumentNullException>(() =>
-        new FileUploadService(_mockIoTHubClient.Object, null!, _authInfo));
+        new FileUploadService(_mockIoTHubClient.Object, null!));
 
     exception.ParamName.Should().Be("logFileHandler");
-  }
-
-  /// <summary>
-  /// コンストラクタでnullのauthInfoが渡された場合、ArgumentNullExceptionが発生することをテスト
-  /// </summary>
-  [Fact]
-  public void Constructor_WithNullAuthInfo_ThrowsArgumentNullException()
-  {
-    // Act & Assert
-    var exception = Assert.Throws<ArgumentNullException>(() =>
-        new FileUploadService(_mockIoTHubClient.Object, _mockLogFileHandler.Object, null!));
-
-    exception.ParamName.Should().Be("authInfo");
   }
 
   /// <summary>

@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
+using AiDevTest1.Infrastructure.Configuration;
 using AiDevTest1.Domain.ValueObjects;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport;
@@ -21,28 +22,28 @@ public class IoTHubClient : IIoTHubClient, IDisposable
   /// <summary>
   /// コンストラクタ
   /// </summary>
-  /// <param name="authenticationInfo">認証情報</param>
-  public IoTHubClient(IOptions<AuthenticationInfo> authenticationInfo)
+  /// <param name="iotHubConfiguration">IoT Hub設定</param>
+  public IoTHubClient(IOptions<IoTHubConfiguration> iotHubConfiguration)
   {
-    if (authenticationInfo?.Value == null)
+    if (iotHubConfiguration?.Value == null)
     {
-      throw new ArgumentNullException(nameof(authenticationInfo));
+      throw new ArgumentNullException(nameof(iotHubConfiguration));
     }
 
-    var authInfo = authenticationInfo.Value;
+    var config = iotHubConfiguration.Value;
 
-    if (string.IsNullOrWhiteSpace(authInfo.ConnectionString))
+    if (string.IsNullOrWhiteSpace(config.ConnectionString))
     {
-      throw new ArgumentException("Connection string is required", nameof(authenticationInfo));
+      throw new ArgumentException("Connection string is required", nameof(iotHubConfiguration));
     }
 
-    _deviceId = authInfo.DeviceId;
+    _deviceId = config.DeviceId;
 
     try
     {
       // DeviceClientを初期化
       _deviceClient = DeviceClient.CreateFromConnectionString(
-          authInfo.ConnectionString,
+          config.ConnectionString,
           TransportType.Mqtt);
     }
     catch (Exception ex)
