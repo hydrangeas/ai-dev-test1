@@ -1,6 +1,7 @@
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
 using AiDevTest1.Domain.Models;
+using AiDevTest1.Domain.Interfaces;
 using AiDevTest1.Infrastructure.Services;
 using FluentAssertions;
 using Moq;

@@ -2,6 +2,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using AiDevTest1.Application.Interfaces;
+
+using AiDevTest1.Domain.Interfaces;
+using AiDevTest1.Domain.Services;
 using AiDevTest1.Infrastructure.Configuration;
 using AiDevTest1.Infrastructure.Services;
 using AiDevTest1.WpfApp.ViewModels;
@@ -47,7 +50,7 @@ namespace AiDevTest1.WpfApp
       services.Configure<IoTHubConfiguration>(authSection);
 
       // Factories and Handlers
-      services.AddTransient<ILogEntryFactory, AiDevTest1.Application.Factories.LogEntryFactory>();
+      services.AddTransient<ILogEntryFactory, LogEntryFactory>();
       services.AddTransient<ILogFileHandler, LogFileHandler>();
 
       // Services
