@@ -1,6 +1,6 @@
 using AiDevTest1.Domain.Models;
 
-namespace AiDevTest1.Application.Interfaces;
+namespace AiDevTest1.Domain.Interfaces;
 
 /// <summary>
 /// LogEntryオブジェクトを生成するファクトリのインターフェース

@@ -1,7 +1,7 @@
-using AiDevTest1.Application.Interfaces;
+using AiDevTest1.Domain.Interfaces;
 using AiDevTest1.Domain.Models;
 
-namespace AiDevTest1.Application.Factories;
+namespace AiDevTest1.Domain.Services;
 
 /// <summary>
 /// LogEntryオブジェクトを生成するファクトリクラス

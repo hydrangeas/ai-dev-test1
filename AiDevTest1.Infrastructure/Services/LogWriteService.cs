@@ -1,5 +1,6 @@
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
+using AiDevTest1.Domain.Interfaces;
 
 namespace AiDevTest1.Infrastructure.Services
 {
