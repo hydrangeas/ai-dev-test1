@@ -6,17 +6,17 @@ namespace AiDevTest1.Infrastructure.Configuration
   /// <summary>
   /// Azure IoT Hub接続設定
   /// </summary>
-  public class IoTHubConfiguration
+  public record IoTHubConfiguration
   {
     /// <summary>
     /// IoT Hub接続文字列
     /// </summary>
-    public string ConnectionString { get; }
+    public string ConnectionString { get; init; } = string.Empty;
 
     /// <summary>
     /// デバイスID
     /// </summary>
-    public DeviceId DeviceId { get; }
+    public DeviceId DeviceId { get; init; } = new DeviceId("default-device");
 
     /// <summary>
     /// IoT Hub設定を初期化します
@@ -34,23 +34,10 @@ namespace AiDevTest1.Infrastructure.Configuration
     }
 
     /// <summary>
-    /// 設定用のパラメーターレスコンストラクタ（プロパティセッター用）
+    /// 設定用のパラメーターレスコンストラクタ
     /// </summary>
     public IoTHubConfiguration()
     {
-      ConnectionString = string.Empty;
-      DeviceId = new DeviceId("default-device");
-    }
-
-    /// <summary>
-    /// 設定値の妥当性を検証します
-    /// </summary>
-    /// <returns>設定が有効な場合はtrue、無効な場合はfalse</returns>
-    public bool IsValid()
-    {
-      return !string.IsNullOrWhiteSpace(ConnectionString) &&
-             DeviceId != null &&
-             !string.IsNullOrWhiteSpace(DeviceId.Value);
     }
   }
 }
