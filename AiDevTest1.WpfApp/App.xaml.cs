@@ -2,7 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using AiDevTest1.Application.Interfaces;
-using AiDevTest1.Application.Models;
+using AiDevTest1.Infrastructure.Configuration;
 using AiDevTest1.Infrastructure.Services;
 using AiDevTest1.WpfApp.ViewModels;
 using Microsoft.Extensions.Logging; // Kept for ILogger if used by Host.CreateDefaultBuilder or future use
@@ -44,7 +44,7 @@ namespace AiDevTest1.WpfApp
     private void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
       var authSection = configuration.GetSection("AuthInfo");
-      services.Configure<AuthenticationInfo>(authSection);
+      services.Configure<IoTHubConfiguration>(authSection);
 
       // Factories and Handlers
       services.AddTransient<ILogEntryFactory, AiDevTest1.Application.Factories.LogEntryFactory>();
