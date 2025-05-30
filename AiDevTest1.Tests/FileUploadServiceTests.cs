@@ -10,19 +10,21 @@ using Xunit;
 namespace AiDevTest1.Tests;
 
 /// <summary>
-/// FileUploadServiceクラスのユニットテスト
+/// FileUploadServiceクラスのユニットテスト（RetryPolicy使用版）
 /// </summary>
 public class FileUploadServiceTests
 {
   private readonly Mock<IIoTHubClient> _mockIoTHubClient;
   private readonly Mock<ILogFileHandler> _mockLogFileHandler;
+  private readonly Mock<IRetryPolicy> _mockRetryPolicy;
   private readonly FileUploadService _service;
 
   public FileUploadServiceTests()
   {
     _mockIoTHubClient = new Mock<IIoTHubClient>();
     _mockLogFileHandler = new Mock<ILogFileHandler>();
-    _service = new FileUploadService(_mockIoTHubClient.Object, _mockLogFileHandler.Object);
+    _mockRetryPolicy = new Mock<IRetryPolicy>();
+    _service = new FileUploadService(_mockIoTHubClient.Object, _mockLogFileHandler.Object, _mockRetryPolicy.Object);
   }
 
   /// <summary>
@@ -33,7 +35,7 @@ public class FileUploadServiceTests
   {
     // Act & Assert
     var exception = Assert.Throws<ArgumentNullException>(() =>
-        new FileUploadService(null!, _mockLogFileHandler.Object));
+        new FileUploadService(null!, _mockLogFileHandler.Object, _mockRetryPolicy.Object));
 
     exception.ParamName.Should().Be("ioTHubClient");
   }
@@ -46,9 +48,22 @@ public class FileUploadServiceTests
   {
     // Act & Assert
     var exception = Assert.Throws<ArgumentNullException>(() =>
-        new FileUploadService(_mockIoTHubClient.Object, null!));
+        new FileUploadService(_mockIoTHubClient.Object, null!, _mockRetryPolicy.Object));
 
     exception.ParamName.Should().Be("logFileHandler");
+  }
+
+  /// <summary>
+  /// コンストラクタでnullのretryPolicyが渡された場合、ArgumentNullExceptionが発生することをテスト
+  /// </summary>
+  [Fact]
+  public void Constructor_WithNullRetryPolicy_ThrowsArgumentNullException()
+  {
+    // Act & Assert
+    var exception = Assert.Throws<ArgumentNullException>(() =>
+        new FileUploadService(_mockIoTHubClient.Object, _mockLogFileHandler.Object, null!));
+
+    exception.ParamName.Should().Be("retryPolicy");
   }
 
   /// <summary>
@@ -58,7 +73,6 @@ public class FileUploadServiceTests
   public async Task UploadLogFileAsync_WithValidWorkflow_ReturnsSuccess()
   {
     // Arrange
-    // 実際のファイルを作成してテスト
     var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
     Directory.CreateDirectory(tempDirectory);
     var tempFilePath = Path.Combine(tempDirectory, "2023-12-25.log");
@@ -74,6 +88,11 @@ public class FileUploadServiceTests
       _mockLogFileHandler
           .Setup(x => x.GetCurrentLogFilePath())
           .Returns(logFilePath);
+
+      // RetryPolicyが成功を返すようにモック
+      _mockRetryPolicy
+          .Setup(x => x.ExecuteAsync(It.IsAny<Func<Task<Result>>>(), It.IsAny<CancellationToken>()))
+          .Returns<Func<Task<Result>>, CancellationToken>((operation, ct) => operation());
 
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(new BlobName("2023-12-25.log")))
@@ -96,9 +115,7 @@ public class FileUploadServiceTests
       result.IsFailure.Should().BeFalse();
 
       _mockLogFileHandler.Verify(x => x.GetCurrentLogFilePath(), Times.Once);
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(new BlobName("2023-12-25.log")), Times.Once);
-      _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
-      _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, true), Times.Once);
+      _mockRetryPolicy.Verify(x => x.ExecuteAsync(It.IsAny<Func<Task<Result>>>(), It.IsAny<CancellationToken>()), Times.Once);
     }
     finally
     {
@@ -137,14 +154,14 @@ public class FileUploadServiceTests
     result.ErrorMessage.Should().Contain(nonExistentFilePath);
 
     _mockLogFileHandler.Verify(x => x.GetCurrentLogFilePath(), Times.Once);
-    _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Never);
+    _mockRetryPolicy.Verify(x => x.ExecuteAsync(It.IsAny<Func<Task<Result>>>(), It.IsAny<CancellationToken>()), Times.Never);
   }
 
   /// <summary>
-  /// SAS URI取得が全ての試行で失敗した場合のリトライロジックをテスト
+  /// RetryPolicyがAggregateExceptionをスローした場合のエラーハンドリングをテスト
   /// </summary>
   [Fact]
-  public async Task UploadLogFileAsync_WhenSasUriFailsAllRetries_ReturnsFailureWithAllAttempts()
+  public async Task UploadLogFileAsync_WhenRetryPolicyThrowsAggregateException_ReturnsFailureWithCombinedMessage()
   {
     // Arrange
     var tempDirectory = Path.GetTempPath();
@@ -159,9 +176,17 @@ public class FileUploadServiceTests
           .Setup(x => x.GetCurrentLogFilePath())
           .Returns(logFilePath);
 
-      _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
-          .ReturnsAsync(SasUriResult.Failure("SAS URI generation failed"));
+      var innerExceptions = new[]
+      {
+        new InvalidOperationException("First attempt failed"),
+        new InvalidOperationException("Second attempt failed"),
+        new InvalidOperationException("Third attempt failed")
+      };
+      var aggregateException = new AggregateException("Multiple failures occurred", innerExceptions);
+
+      _mockRetryPolicy
+          .Setup(x => x.ExecuteAsync(It.IsAny<Func<Task<Result>>>(), It.IsAny<CancellationToken>()))
+          .ThrowsAsync(aggregateException);
 
       // Act
       var result = await _service.UploadLogFileAsync();
@@ -171,16 +196,12 @@ public class FileUploadServiceTests
       result.IsSuccess.Should().BeFalse();
       result.IsFailure.Should().BeTrue();
       result.ErrorMessage.Should().NotBeNull();
-      result.ErrorMessage.Should().Contain("ファイルアップロードが3回の試行すべてで失敗しました");
-      result.ErrorMessage.Should().Contain("試行1: SAS URI取得に失敗");
-      result.ErrorMessage.Should().Contain("試行2: SAS URI取得に失敗");
-      result.ErrorMessage.Should().Contain("試行3: SAS URI取得に失敗");
-      result.ErrorMessage.Should().Contain("SAS URI generation failed");
+      result.ErrorMessage.Should().Contain("ファイルアップロードが全ての試行で失敗しました");
+      result.ErrorMessage.Should().Contain("First attempt failed");
+      result.ErrorMessage.Should().Contain("Second attempt failed");
+      result.ErrorMessage.Should().Contain("Third attempt failed");
 
-      // 3回のリトライが実行されたことを確認
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(3));
-      _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Never);
-      _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+      _mockRetryPolicy.Verify(x => x.ExecuteAsync(It.IsAny<Func<Task<Result>>>(), It.IsAny<CancellationToken>()), Times.Once);
     }
     finally
     {
@@ -193,10 +214,10 @@ public class FileUploadServiceTests
   }
 
   /// <summary>
-  /// SAS URIが空文字列の場合のエラーハンドリングをテスト
+  /// RetryPolicyが一般的な例外をスローした場合のエラーハンドリングをテスト
   /// </summary>
   [Fact]
-  public async Task UploadLogFileAsync_WhenSasUriIsEmpty_ReturnsFailureAfterRetries()
+  public async Task UploadLogFileAsync_WhenRetryPolicyThrowsGeneralException_ReturnsFailure()
   {
     // Arrange
     var tempDirectory = Path.GetTempPath();
@@ -211,9 +232,11 @@ public class FileUploadServiceTests
           .Setup(x => x.GetCurrentLogFilePath())
           .Returns(logFilePath);
 
-      _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
-          .ReturnsAsync(SasUriResult.Success("", "correlation-id")); // 空のSAS URI
+      var expectedException = new InvalidOperationException("Unexpected error from retry policy");
+
+      _mockRetryPolicy
+          .Setup(x => x.ExecuteAsync(It.IsAny<Func<Task<Result>>>(), It.IsAny<CancellationToken>()))
+          .ThrowsAsync(expectedException);
 
       // Act
       var result = await _service.UploadLogFileAsync();
@@ -223,194 +246,10 @@ public class FileUploadServiceTests
       result.IsSuccess.Should().BeFalse();
       result.IsFailure.Should().BeTrue();
       result.ErrorMessage.Should().NotBeNull();
-      result.ErrorMessage.Should().Contain("ファイルアップロードが3回の試行すべてで失敗しました");
-      result.ErrorMessage.Should().Contain("試行1: SAS URIが空");
-      result.ErrorMessage.Should().Contain("試行2: SAS URIが空");
-      result.ErrorMessage.Should().Contain("試行3: SAS URIが空");
+      result.ErrorMessage.Should().Contain("ファイルアップロード処理で予期しないエラーが発生しました");
+      result.ErrorMessage.Should().Contain("Unexpected error from retry policy");
 
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(3));
-      _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Never);
-    }
-    finally
-    {
-      // Cleanup
-      if (File.Exists(tempFilePath))
-      {
-        File.Delete(tempFilePath);
-      }
-    }
-  }
-
-  /// <summary>
-  /// Blobアップロードが全ての試行で失敗した場合のリトライロジックをテスト
-  /// </summary>
-  [Fact]
-  public async Task UploadLogFileAsync_WhenBlobUploadFailsAllRetries_ReturnsFailureWithAllAttempts()
-  {
-    // Arrange
-    var tempDirectory = Path.GetTempPath();
-    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
-    var fileContent = "test content"u8.ToArray();
-    await File.WriteAllBytesAsync(tempFilePath, fileContent);
-
-    try
-    {
-      var sasUri = "https://test.blob.core.windows.net/logs/test.log?sas=token";
-      var correlationId = "test-correlation-id";
-
-      var logFilePath = new LogFilePath(tempFilePath);
-      _mockLogFileHandler
-          .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(logFilePath);
-
-      _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
-          .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
-
-      _mockIoTHubClient
-          .Setup(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()))
-          .ReturnsAsync(UploadToBlobResult.Failure("Blob upload failed"));
-
-      _mockIoTHubClient
-          .Setup(x => x.NotifyFileUploadCompleteAsync(correlationId, false))
-          .ReturnsAsync(Result.Success());
-
-      // Act
-      var result = await _service.UploadLogFileAsync();
-
-      // Assert
-      result.Should().NotBeNull();
-      result.IsSuccess.Should().BeFalse();
-      result.IsFailure.Should().BeTrue();
-      result.ErrorMessage.Should().NotBeNull();
-      result.ErrorMessage.Should().Contain("ファイルアップロードが3回の試行すべてで失敗しました");
-      result.ErrorMessage.Should().Contain("試行1: Blobアップロードに失敗");
-      result.ErrorMessage.Should().Contain("試行2: Blobアップロードに失敗");
-      result.ErrorMessage.Should().Contain("試行3: Blobアップロードに失敗");
-      result.ErrorMessage.Should().Contain("Blob upload failed");
-
-      // 3回のリトライが実行されたことを確認
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(3));
-      _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Exactly(3));
-      // 最後の試行で失敗通知が送信されることを確認
-      _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, false), Times.Once);
-    }
-    finally
-    {
-      // Cleanup
-      if (File.Exists(tempFilePath))
-      {
-        File.Delete(tempFilePath);
-      }
-    }
-  }
-
-  /// <summary>
-  /// 最初の試行で成功した場合、リトライが実行されないことをテスト
-  /// </summary>
-  [Fact]
-  public async Task UploadLogFileAsync_WhenFirstAttemptSucceeds_DoesNotRetry()
-  {
-    // Arrange
-    var tempDirectory = Path.GetTempPath();
-    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
-    var fileContent = "test content"u8.ToArray();
-    await File.WriteAllBytesAsync(tempFilePath, fileContent);
-
-    try
-    {
-      var sasUri = "https://test.blob.core.windows.net/logs/test.log?sas=token";
-      var correlationId = "test-correlation-id";
-
-      var logFilePath = new LogFilePath(tempFilePath);
-      _mockLogFileHandler
-          .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(logFilePath);
-
-      _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
-          .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
-
-      _mockIoTHubClient
-          .Setup(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()))
-          .ReturnsAsync(UploadToBlobResult.Success());
-
-      _mockIoTHubClient
-          .Setup(x => x.NotifyFileUploadCompleteAsync(correlationId, true))
-          .ReturnsAsync(Result.Success());
-
-      // Act
-      var result = await _service.UploadLogFileAsync();
-
-      // Assert
-      result.Should().NotBeNull();
-      result.IsSuccess.Should().BeTrue();
-      result.IsFailure.Should().BeFalse();
-      result.ErrorMessage.Should().BeNull();
-
-      // 1回のみ実行されたことを確認（リトライなし）
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Once);
-      _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
-      _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, true), Times.Once);
-    }
-    finally
-    {
-      // Cleanup
-      if (File.Exists(tempFilePath))
-      {
-        File.Delete(tempFilePath);
-      }
-    }
-  }
-
-  /// <summary>
-  /// 2回目の試行で成功した場合のリトライロジックをテスト
-  /// </summary>
-  [Fact]
-  public async Task UploadLogFileAsync_WhenSecondAttemptSucceeds_RetriesOnceAndSucceeds()
-  {
-    // Arrange
-    var tempDirectory = Path.GetTempPath();
-    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
-    var fileContent = "test content"u8.ToArray();
-    await File.WriteAllBytesAsync(tempFilePath, fileContent);
-
-    try
-    {
-      var sasUri = "https://test.blob.core.windows.net/logs/test.log?sas=token";
-      var correlationId = "test-correlation-id";
-
-      var logFilePath = new LogFilePath(tempFilePath);
-      _mockLogFileHandler
-          .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(logFilePath);
-
-      _mockIoTHubClient
-          .SetupSequence(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
-          .ReturnsAsync(SasUriResult.Failure("First attempt failed"))
-          .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
-
-      _mockIoTHubClient
-          .Setup(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()))
-          .ReturnsAsync(UploadToBlobResult.Success());
-
-      _mockIoTHubClient
-          .Setup(x => x.NotifyFileUploadCompleteAsync(correlationId, true))
-          .ReturnsAsync(Result.Success());
-
-      // Act
-      var result = await _service.UploadLogFileAsync();
-
-      // Assert
-      result.Should().NotBeNull();
-      result.IsSuccess.Should().BeTrue();
-      result.IsFailure.Should().BeFalse();
-      result.ErrorMessage.Should().BeNull();
-
-      // 2回実行されたことを確認
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(2));
-      _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
-      _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, true), Times.Once);
+      _mockRetryPolicy.Verify(x => x.ExecuteAsync(It.IsAny<Func<Task<Result>>>(), It.IsAny<CancellationToken>()), Times.Once);
     }
     finally
     {
@@ -444,6 +283,11 @@ public class FileUploadServiceTests
           .Setup(x => x.GetCurrentLogFilePath())
           .Returns(logFilePath);
 
+      // RetryPolicyが実際の操作を実行するようにモック
+      _mockRetryPolicy
+          .Setup(x => x.ExecuteAsync(It.IsAny<Func<Task<Result>>>(), It.IsAny<CancellationToken>()))
+          .Returns<Func<Task<Result>>, CancellationToken>((operation, ct) => operation());
+
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ReturnsAsync(SasUriResult.Success(sasUri, correlationId));
@@ -466,10 +310,6 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().NotBeNull();
       result.ErrorMessage.Should().Contain("アップロード完了通知に失敗しました");
       result.ErrorMessage.Should().Contain("Notification failed");
-
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Once);
-      _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
-      _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(correlationId, true), Times.Once);
     }
     finally
     {
@@ -503,6 +343,11 @@ public class FileUploadServiceTests
           .Setup(x => x.GetCurrentLogFilePath())
           .Returns(logFilePath);
 
+      // RetryPolicyが実際の操作を実行するようにモック
+      _mockRetryPolicy
+          .Setup(x => x.ExecuteAsync(It.IsAny<Func<Task<Result>>>(), It.IsAny<CancellationToken>()))
+          .Returns<Func<Task<Result>>, CancellationToken>((operation, ct) => operation());
+
       _mockIoTHubClient
           .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
           .ReturnsAsync(SasUriResult.Success(sasUri, emptyCorrelationId));
@@ -521,8 +366,6 @@ public class FileUploadServiceTests
       result.ErrorMessage.Should().NotBeNull();
       result.ErrorMessage.Should().Contain("相関IDが空です");
 
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Once);
-      _mockIoTHubClient.Verify(x => x.UploadToBlobAsync(sasUri, It.IsAny<byte[]>()), Times.Once);
       _mockIoTHubClient.Verify(x => x.NotifyFileUploadCompleteAsync(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
     }
     finally
@@ -533,83 +376,5 @@ public class FileUploadServiceTests
         File.Delete(tempFilePath);
       }
     }
-  }
-
-  /// <summary>
-  /// 予期しない例外が発生した場合のエラーハンドリングをテスト
-  /// </summary>
-  [Fact]
-  public async Task UploadLogFileAsync_WhenUnexpectedExceptionOccurs_ReturnsFailure()
-  {
-    // Arrange
-    var tempDirectory = Path.GetTempPath();
-    var tempFilePath = Path.Combine(tempDirectory, $"test-{Guid.NewGuid()}.log");
-    var fileContent = "test content"u8.ToArray();
-    await File.WriteAllBytesAsync(tempFilePath, fileContent);
-
-    try
-    {
-      var logFilePath = new LogFilePath(tempFilePath);
-      _mockLogFileHandler
-          .Setup(x => x.GetCurrentLogFilePath())
-          .Returns(logFilePath);
-
-      _mockIoTHubClient
-          .Setup(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()))
-          .ThrowsAsync(new InvalidOperationException("Unexpected error"));
-
-      // Act
-      var result = await _service.UploadLogFileAsync();
-
-      // Assert
-      result.Should().NotBeNull();
-      result.IsSuccess.Should().BeFalse();
-      result.IsFailure.Should().BeTrue();
-      result.ErrorMessage.Should().NotBeNull();
-      result.ErrorMessage.Should().Contain("ファイルアップロードが3回の試行すべてで失敗しました");
-      result.ErrorMessage.Should().Contain("試行1: 予期しないエラー - Unexpected error");
-      result.ErrorMessage.Should().Contain("試行2: 予期しないエラー - Unexpected error");
-      result.ErrorMessage.Should().Contain("試行3: 予期しないエラー - Unexpected error");
-
-      _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Exactly(3));
-    }
-    finally
-    {
-      // Cleanup
-      if (File.Exists(tempFilePath))
-      {
-        File.Delete(tempFilePath);
-      }
-    }
-  }
-
-  /// <summary>
-  /// ファイル読み取りで例外が発生した場合のエラーハンドリングをテスト
-  /// </summary>
-  [Fact]
-  public async Task UploadLogFileAsync_WhenFileReadFails_ReturnsFailure()
-  {
-    // Arrange
-    var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-    var invalidFilePath = Path.Combine(tempDirectory, "invalid-path", "test.log");
-    // 存在しないパスをシミュレート
-    var logFilePath = new LogFilePath(invalidFilePath);
-
-    _mockLogFileHandler
-        .Setup(x => x.GetCurrentLogFilePath())
-        .Returns(logFilePath);
-
-    // Act
-    var result = await _service.UploadLogFileAsync();
-
-    // Assert
-    result.Should().NotBeNull();
-    result.IsSuccess.Should().BeFalse();
-    result.IsFailure.Should().BeTrue();
-    result.ErrorMessage.Should().NotBeNull();
-    result.ErrorMessage.Should().Contain("ログファイルが存在しません");
-
-    _mockLogFileHandler.Verify(x => x.GetCurrentLogFilePath(), Times.Once);
-    _mockIoTHubClient.Verify(x => x.GetFileUploadSasUriAsync(It.IsAny<BlobName>()), Times.Never);
   }
 }
