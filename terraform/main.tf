@@ -66,7 +66,7 @@ resource "azurerm_storage_account" "iot_storage" {
 # Create a storage container for uploaded files
 resource "azurerm_storage_container" "iot_files" {
   name                  = var.storage_container_name
-  storage_account_id    = azurerm_storage_account.iot_storage.id
+  storage_account_name  = azurerm_storage_account.iot_storage.name
   container_access_type = "private"
 }
 
@@ -108,10 +108,5 @@ resource "azurerm_iothub_shared_access_policy" "device_connect" {
   device_connect = true
 }
 
-# Create an IoT device
-resource "azurerm_iothub_device" "test_device" {
-  name                = var.device_id
-  iothub_name         = azurerm_iothub.main.name
-  resource_group_name = azurerm_resource_group.main.name
-  authentication_type = "sas"
-}
+# Note: IoT Hub devices are typically created programmatically through the IoT Hub SDK
+# or Azure CLI rather than through Terraform resources

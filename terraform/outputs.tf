@@ -36,43 +36,18 @@ output "iothub_hostname" {
   value       = azurerm_iothub.main.hostname
 }
 
-output "iothub_device_connection_string" {
-  description = "Connection string for the IoT device"
-  value       = "HostName=${azurerm_iothub.main.hostname};DeviceId=${azurerm_iothub_device.test_device.name};SharedAccessKey=${azurerm_iothub_device.test_device.primary_key}"
-  sensitive   = true
-}
-
 output "iothub_service_connection_string" {
   description = "Service connection string for the IoT Hub (for management operations)"
   value       = "HostName=${azurerm_iothub.main.hostname};SharedAccessKeyName=${azurerm_iothub_shared_access_policy.device_connect.name};SharedAccessKey=${azurerm_iothub_shared_access_policy.device_connect.primary_key}"
   sensitive   = true
 }
 
-output "device_id" {
-  description = "IoT device ID"
-  value       = azurerm_iothub_device.test_device.name
-}
+# Note: Device-specific outputs have been removed since azurerm_iothub_device
+# resource is not supported in Terraform. Create devices programmatically using:
+# - Azure CLI: az iot hub device-identity create
+# - Azure IoT SDK
+# - Azure Portal
 
-output "device_primary_key" {
-  description = "Primary key for the IoT device"
-  value       = azurerm_iothub_device.test_device.primary_key
-  sensitive   = true
-}
-
-output "device_secondary_key" {
-  description = "Secondary key for the IoT device"
-  value       = azurerm_iothub_device.test_device.secondary_key
-  sensitive   = true
-}
-
-# Configuration for appsettings.json
-output "appsettings_configuration" {
-  description = "Configuration values for appsettings.json"
-  value = {
-    AuthInfo = {
-      ConnectionString = "HostName=${azurerm_iothub.main.hostname};DeviceId=${azurerm_iothub_device.test_device.name};SharedAccessKey=${azurerm_iothub_device.test_device.primary_key}"
-      DeviceId         = azurerm_iothub_device.test_device.name
-    }
-  }
-  sensitive = true
-}
+# Example commands to create a device after deployment:
+# az iot hub device-identity create --hub-name <iothub_name> --device-id <device_id>
+# az iot hub device-identity connection-string show --hub-name <iothub_name> --device-id <device_id>
