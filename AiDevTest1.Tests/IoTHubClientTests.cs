@@ -372,10 +372,10 @@ public class IoTHubClientTests
   }
 
   /// <summary>
-  /// blobNameにデバイスIDが適切に含まれることをテスト（SAS URI生成時のfullBlobName構築）
+  /// 有効なBlobNameでSAS URI取得を試行した際の動作をテスト（実際の接続なしで失敗することを確認）
   /// </summary>
   [Fact]
-  public async Task GetFileUploadSasUriAsync_WithValidBlobName_IncludesDeviceIdInBlobName()
+  public async Task GetFileUploadSasUriAsync_WithValidBlobName_ReturnsFailureWithoutConnection()
   {
     // Arrange
     var deviceId = new DeviceId("test-device-123");
