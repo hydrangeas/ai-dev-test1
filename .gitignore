@@ -108,3 +108,17 @@ artifacts/
 # Operations Management Suite (OMS) instrumentation key and host entry
 Logging.Mode=VisualStudio
 HockeyAppSampleiOSCrashOnly.sln.ideobjecthistory
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# Terraform variable files with secrets (keep terraform.tfvars as template)
+.terraform/terraform.tfvars.local
+.terraform/terraform.auto.tfvars
+.terraform/*.auto.tfvars
