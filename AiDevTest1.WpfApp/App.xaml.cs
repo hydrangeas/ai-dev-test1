@@ -2,10 +2,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using AiDevTest1.Application.Interfaces;
-
 using AiDevTest1.Domain.Interfaces;
 using AiDevTest1.Domain.Services;
 using AiDevTest1.Infrastructure.Configuration;
+using AiDevTest1.Infrastructure.Policies;
 using AiDevTest1.Infrastructure.Services;
 using AiDevTest1.WpfApp.ViewModels;
 using Microsoft.Extensions.Logging; // Kept for ILogger if used by Host.CreateDefaultBuilder or future use
@@ -52,6 +52,9 @@ namespace AiDevTest1.WpfApp
       // Factories and Handlers
       services.AddTransient<ILogEntryFactory, LogEntryFactory>();
       services.AddTransient<ILogFileHandler, LogFileHandler>();
+
+      // Policies
+      services.AddTransient<IRetryPolicy, ExponentialBackoffRetryPolicy>();
 
       // Services
       services.AddSingleton<ILogWriteService, LogWriteService>();
