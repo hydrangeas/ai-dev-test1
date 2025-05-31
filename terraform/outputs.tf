@@ -17,7 +17,7 @@ output "storage_account_name" {
 
 output "storage_account_primary_connection_string" {
   description = "Primary connection string for the storage account"
-  value       = azurerm_storage_account.iot_storage.primary_connection_string
+  value       = azurerm_storage_account.iot_storage.primary_blob_connection_string
   sensitive   = true
 }
 

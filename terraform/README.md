@@ -11,7 +11,7 @@
 ## ファイル構成
 
 ```txt
-.terraform/
+terraform/
 ├── main.tf           # メインのリソース定義
 ├── variables.tf      # 変数定義
 ├── outputs.tf        # 出力値定義
@@ -55,7 +55,7 @@ device_id = "test-device-001"                 # 1-128文字
 ### 3. Terraformの初期化
 
 ```bash
-cd .terraform
+cd terraform
 terraform init
 ```
 
