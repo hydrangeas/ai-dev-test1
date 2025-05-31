@@ -66,8 +66,8 @@ public class IoTHubClient : IIoTHubClient, IDisposable
 
     try
     {
-      // デバイスID/ファイル名の形式でBlob名を構築
-      var fullBlobName = blobName.GetFullBlobName(_deviceId);
+      // Blob名をそのまま使用（デバイスIDは含めない）
+      var fullBlobName = blobName.Value;
 
       // Azure IoT Hub SDKを使用してファイルアップロード用のSAS URIを取得
       var fileUploadSasUriRequest = new FileUploadSasUriRequest
