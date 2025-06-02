@@ -22,7 +22,7 @@ namespace AiDevTest1.Tests.DomainEvents
         [Fact]
         public void LogWrittenToFileEvent_ShouldSetPropertiesCorrectly()
         {
-            var filePath = "/test/path.log";
+            var filePath = LogFilePath.Create("/test/path.log").Value;
             var logEntry = new LogEntry(EventType.START);
 
             var @event = new LogWrittenToFileEvent(filePath, logEntry);
@@ -71,6 +71,30 @@ namespace AiDevTest1.Tests.DomainEvents
             var event2 = new TestDomainEvent();
 
             event1.EventId.Should().NotBe(event2.EventId);
+        }
+
+        [Fact]
+        public void FileUploadFailedEvent_ShouldThrowArgumentNullException_WhenFilePathIsNull()
+        {
+            LogFilePath filePath = null;
+            var errorMessage = "Upload failed";
+
+            var action = () => new FileUploadFailedEvent(filePath, errorMessage);
+
+            action.Should().Throw<ArgumentNullException>()
+                .WithParameterName("filePath");
+        }
+
+        [Fact]
+        public void FileUploadFailedEvent_ShouldThrowArgumentNullException_WhenErrorMessageIsNull()
+        {
+            var filePath = LogFilePath.Create("/test/path.log").Value;
+            string errorMessage = null;
+
+            var action = () => new FileUploadFailedEvent(filePath, errorMessage);
+
+            action.Should().Throw<ArgumentNullException>()
+                .WithParameterName("errorMessage");
         }
 
         private class TestDomainEvent : DomainEventBase

@@ -1,13 +1,14 @@
 using AiDevTest1.Domain.Models;
+using AiDevTest1.Domain.ValueObjects;
 
 namespace AiDevTest1.Domain.Events
 {
     public class LogWrittenToFileEvent : DomainEventBase
     {
-        public string FilePath { get; }
+        public LogFilePath FilePath { get; }
         public LogEntry LogEntry { get; }
 
-        public LogWrittenToFileEvent(string filePath, LogEntry logEntry)
+        public LogWrittenToFileEvent(LogFilePath filePath, LogEntry logEntry)
         {
             FilePath = filePath;
             LogEntry = logEntry;
