@@ -2,6 +2,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using AiDevTest1.Application.Interfaces;
+using AiDevTest1.Application.Commands;
+using AiDevTest1.Application.Handlers;
 using AiDevTest1.Domain.Interfaces;
 using AiDevTest1.Domain.Services;
 using AiDevTest1.Infrastructure.Configuration;
@@ -52,6 +54,9 @@ namespace AiDevTest1.WpfApp
       // Factories and Handlers
       services.AddTransient<ILogEntryFactory, LogEntryFactory>();
       services.AddTransient<ILogFileHandler, LogFileHandler>();
+
+      // Command Handlers
+      services.AddTransient<ICommandHandler<WriteLogCommand>, WriteLogCommandHandler>();
 
       // Policies
       services.AddTransient<IRetryPolicy, ExponentialBackoffRetryPolicy>();

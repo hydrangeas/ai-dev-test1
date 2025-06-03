@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AiDevTest1.Application.Interfaces;
+using AiDevTest1.Application.Commands;
 using AiDevTest1.WpfApp.Helpers;
 using System;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace AiDevTest1.WpfApp.ViewModels
   /// </summary>
   public partial class MainWindowViewModel : ObservableObject
   {
-    private readonly ILogWriteService _logWriteService;
+    private readonly ICommandHandler<WriteLogCommand> _writeLogCommandHandler;
     private readonly IFileUploadService _fileUploadService;
 
     /// <summary>
@@ -30,11 +31,11 @@ namespace AiDevTest1.WpfApp.ViewModels
     /// <summary>
     /// コンストラクタ（依存性注入）
     /// </summary>
-    /// <param name="logWriteService">ログ書き込みサービス</param>
+    /// <param name="writeLogCommandHandler">ログ書き込みコマンドハンドラー</param>
     /// <param name="fileUploadService">ファイルアップロードサービス</param>
-    public MainWindowViewModel(ILogWriteService logWriteService, IFileUploadService fileUploadService)
+    public MainWindowViewModel(ICommandHandler<WriteLogCommand> writeLogCommandHandler, IFileUploadService fileUploadService)
     {
-      _logWriteService = logWriteService ?? throw new ArgumentNullException(nameof(logWriteService));
+      _writeLogCommandHandler = writeLogCommandHandler ?? throw new ArgumentNullException(nameof(writeLogCommandHandler));
       _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
 
       // ログ書き込みコマンドの初期化
@@ -65,8 +66,9 @@ namespace AiDevTest1.WpfApp.ViewModels
         // コマンドの実行可否状態を更新
         LogWriteCommand.NotifyCanExecuteChanged();
 
-        // ログエントリの書き込み実行
-        var result = await _logWriteService.WriteLogEntryAsync();
+        // コマンドパターンを使用してログエントリの書き込みを実行
+        var command = new WriteLogCommand();
+        var result = await _writeLogCommandHandler.HandleAsync(command);
 
         // NOTE: issue #18では IDialogService のDI注入が仕様とされていたが、
         // issue #13のDialogService実装が未完了のため、暫定的に既存のDialogHelperを直接使用
