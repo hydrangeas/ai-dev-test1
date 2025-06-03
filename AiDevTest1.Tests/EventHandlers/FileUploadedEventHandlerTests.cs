@@ -30,7 +30,7 @@ namespace AiDevTest1.Tests.EventHandlers
             var domainEvent = new FileUploadedEvent(
                 new LogFilePath("2024-01-01.log"),
                 new BlobName("logs/2024/01/01/device-001.log"),
-                "https://example.blob.core.windows.net/logs/2024/01/01/device-001.log");
+                "blob://logs/2024/01/01/device-001.log");
 
             // Act
             await _handler.HandleAsync(domainEvent);
@@ -64,7 +64,7 @@ namespace AiDevTest1.Tests.EventHandlers
             var domainEvent = new FileUploadedEvent(
                 new LogFilePath("test.log"),
                 new BlobName("test-blob"),
-                "https://example.blob.core.windows.net/test-blob");
+                "blob://test-blob");
 
             // Act
             var task = _handler.HandleAsync(domainEvent);

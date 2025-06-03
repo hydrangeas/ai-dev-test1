@@ -60,7 +60,9 @@ namespace AiDevTest1.Application.Handlers
                 {
                     // アップロード成功イベント
                     var blobName = new BlobName($"logs/{DateTime.Now:yyyy/MM/dd}/{filePath.FileName}");
-                    var blobUri = $"https://examplestorage.blob.core.windows.net/logs/{DateTime.Now:yyyy/MM/dd}/{filePath.FileName}";
+                    // 注意: Application層では実際のストレージアカウント名にアクセスできないため、
+                    // Infrastructure層でイベントハンドラーが実際のURIに置き換える想定
+                    var blobUri = $"blob://logs/{DateTime.Now:yyyy/MM/dd}/{filePath.FileName}";
                     
                     var uploadedEvent = new FileUploadedEvent(
                         filePath,
