@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using AiDevTest1.Application.Commands;
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
+using AiDevTest1.Domain.Events;
+using AiDevTest1.Domain.ValueObjects;
 
 namespace AiDevTest1.Application.Handlers
 {
@@ -13,14 +15,17 @@ namespace AiDevTest1.Application.Handlers
     public class UploadFileCommandHandler : ICommandHandler<UploadFileCommand>
     {
         private readonly IFileUploadService _fileUploadService;
+        private readonly IEventDispatcher _eventDispatcher;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="fileUploadService">ファイルアップロードサービス</param>
-        public UploadFileCommandHandler(IFileUploadService fileUploadService)
+        /// <param name="eventDispatcher">イベントディスパッチャー</param>
+        public UploadFileCommandHandler(IFileUploadService fileUploadService, IEventDispatcher eventDispatcher)
         {
             _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
+            _eventDispatcher = eventDispatcher ?? throw new ArgumentNullException(nameof(eventDispatcher));
         }
 
         /// <summary>
@@ -39,7 +44,32 @@ namespace AiDevTest1.Application.Handlers
             try
             {
                 // ファイルアップロードサービスを使用してログファイルをアップロード
-                return await _fileUploadService.UploadLogFileAsync();
+                var result = await _fileUploadService.UploadLogFileAsync();
+
+                // イベントの発行
+                var filePath = new LogFilePath($"{DateTime.Now:yyyy-MM-dd}.log");
+
+                if (result.IsSuccess)
+                {
+                    // アップロード成功イベント
+                    var uploadedEvent = new FileUploadedEvent(
+                        filePath,
+                        new BlobName($"logs/{DateTime.Now:yyyy/MM/dd}/device-001.log"),
+                        "https://example.blob.core.windows.net/logs/example.log");
+
+                    await _eventDispatcher.DispatchAsync(uploadedEvent, cancellationToken);
+                }
+                else
+                {
+                    // アップロード失敗イベント
+                    var failedEvent = new FileUploadFailedEvent(
+                        filePath,
+                        result.ErrorMessage ?? "不明なエラー");
+
+                    await _eventDispatcher.DispatchAsync(failedEvent, cancellationToken);
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
