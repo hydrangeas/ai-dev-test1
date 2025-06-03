@@ -15,7 +15,7 @@ namespace AiDevTest1.WpfApp.ViewModels
   public partial class MainWindowViewModel : ObservableObject
   {
     private readonly ICommandHandler<WriteLogCommand> _writeLogCommandHandler;
-    private readonly IFileUploadService _fileUploadService;
+    private readonly ICommandHandler<UploadFileCommand> _uploadFileCommandHandler;
 
     /// <summary>
     /// 処理実行中かどうかを示すフラグ
@@ -32,11 +32,11 @@ namespace AiDevTest1.WpfApp.ViewModels
     /// コンストラクタ（依存性注入）
     /// </summary>
     /// <param name="writeLogCommandHandler">ログ書き込みコマンドハンドラー</param>
-    /// <param name="fileUploadService">ファイルアップロードサービス</param>
-    public MainWindowViewModel(ICommandHandler<WriteLogCommand> writeLogCommandHandler, IFileUploadService fileUploadService)
+    /// <param name="uploadFileCommandHandler">ファイルアップロードコマンドハンドラー</param>
+    public MainWindowViewModel(ICommandHandler<WriteLogCommand> writeLogCommandHandler, ICommandHandler<UploadFileCommand> uploadFileCommandHandler)
     {
       _writeLogCommandHandler = writeLogCommandHandler ?? throw new ArgumentNullException(nameof(writeLogCommandHandler));
-      _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
+      _uploadFileCommandHandler = uploadFileCommandHandler ?? throw new ArgumentNullException(nameof(uploadFileCommandHandler));
 
       // ログ書き込みコマンドの初期化
       LogWriteCommand = new AsyncRelayCommand(ExecuteLogWriteAsync, CanExecuteLogWrite);
@@ -77,7 +77,8 @@ namespace AiDevTest1.WpfApp.ViewModels
         if (result.IsSuccess)
         {
           // ログ書き込み成功時のみファイルアップロードを実行
-          var uploadResult = await _fileUploadService.UploadLogFileAsync();
+          var uploadCommand = new UploadFileCommand();
+          var uploadResult = await _uploadFileCommandHandler.HandleAsync(uploadCommand);
           if (uploadResult.IsSuccess)
           {
             // 全処理成功
