@@ -58,6 +58,7 @@ namespace AiDevTest1.WpfApp
 
       // Command Handlers
       services.AddTransient<ICommandHandler<WriteLogCommand>, WriteLogCommandHandler>();
+      services.AddTransient<ICommandHandler<UploadFileCommand>, UploadFileCommandHandler>();
 
       // Policies
       services.AddTransient<IRetryPolicy, ExponentialBackoffRetryPolicy>();
