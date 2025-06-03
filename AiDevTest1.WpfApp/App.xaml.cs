@@ -63,6 +63,7 @@ namespace AiDevTest1.WpfApp
 
       // Policies
       services.AddTransient<IRetryPolicy, ExponentialBackoffRetryPolicy>();
+      services.AddTransient<IDialogDisplayPolicy, StandardDialogDisplayPolicy>();
 
       // Services
       services.AddSingleton<ILogWriteService, LogWriteService>();
@@ -73,7 +74,13 @@ namespace AiDevTest1.WpfApp
       services.AddSingleton<IEventDispatcher, EventDispatcher>();
 
       // UI Services
-      services.AddSingleton<IDialogService, DialogService>();
+      services.AddSingleton<DialogService>();
+      services.AddSingleton<IDialogService>(provider =>
+      {
+        var dialogService = provider.GetRequiredService<DialogService>();
+        var displayPolicy = provider.GetRequiredService<IDialogDisplayPolicy>();
+        return new PolicyBasedDialogService(dialogService, displayPolicy);
+      });
 
       // ViewModels
       services.AddSingleton<MainWindowViewModel>();
