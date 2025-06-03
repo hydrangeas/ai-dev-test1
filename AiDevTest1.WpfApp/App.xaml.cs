@@ -12,6 +12,8 @@ using AiDevTest1.Infrastructure.Services;
 using AiDevTest1.Infrastructure.Events;
 using AiDevTest1.WpfApp.ViewModels;
 using AiDevTest1.WpfApp.Services;
+using AiDevTest1.Application.EventHandlers;
+using AiDevTest1.Domain.Events;
 using Microsoft.Extensions.Logging; // Kept for ILogger if used by Host.CreateDefaultBuilder or future use
 using System;
 using System.Windows;
@@ -72,6 +74,11 @@ namespace AiDevTest1.WpfApp
 
       // Event Dispatcher
       services.AddSingleton<IEventDispatcher, EventDispatcher>();
+
+      // Event Handlers
+      services.AddTransient<IEventHandler<LogWrittenToFileEvent>, LogWrittenToFileEventHandler>();
+      services.AddTransient<IEventHandler<FileUploadedEvent>, FileUploadedEventHandler>();
+      services.AddTransient<IEventHandler<FileUploadFailedEvent>, FileUploadFailedEventHandler>();
 
       // UI Services
       services.AddSingleton<DialogService>();
