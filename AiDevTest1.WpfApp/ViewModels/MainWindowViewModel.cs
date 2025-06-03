@@ -2,7 +2,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Commands;
-using AiDevTest1.WpfApp.Helpers;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -16,6 +15,7 @@ namespace AiDevTest1.WpfApp.ViewModels
   {
     private readonly ICommandHandler<WriteLogCommand> _writeLogCommandHandler;
     private readonly ICommandHandler<UploadFileCommand> _uploadFileCommandHandler;
+    private readonly IDialogService _dialogService;
 
     /// <summary>
     /// 処理実行中かどうかを示すフラグ
@@ -33,10 +33,12 @@ namespace AiDevTest1.WpfApp.ViewModels
     /// </summary>
     /// <param name="writeLogCommandHandler">ログ書き込みコマンドハンドラー</param>
     /// <param name="uploadFileCommandHandler">ファイルアップロードコマンドハンドラー</param>
-    public MainWindowViewModel(ICommandHandler<WriteLogCommand> writeLogCommandHandler, ICommandHandler<UploadFileCommand> uploadFileCommandHandler)
+    /// <param name="dialogService">ダイアログサービス</param>
+    public MainWindowViewModel(ICommandHandler<WriteLogCommand> writeLogCommandHandler, ICommandHandler<UploadFileCommand> uploadFileCommandHandler, IDialogService dialogService)
     {
       _writeLogCommandHandler = writeLogCommandHandler ?? throw new ArgumentNullException(nameof(writeLogCommandHandler));
       _uploadFileCommandHandler = uploadFileCommandHandler ?? throw new ArgumentNullException(nameof(uploadFileCommandHandler));
+      _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
 
       // ログ書き込みコマンドの初期化
       LogWriteCommand = new AsyncRelayCommand(ExecuteLogWriteAsync, CanExecuteLogWrite);
@@ -70,9 +72,7 @@ namespace AiDevTest1.WpfApp.ViewModels
         var command = new WriteLogCommand();
         var result = await _writeLogCommandHandler.HandleAsync(command);
 
-        // NOTE: issue #18では IDialogService のDI注入が仕様とされていたが、
-        // issue #13のDialogService実装が未完了のため、暫定的に既存のDialogHelperを直接使用
-        // 将来的にはIDialogServiceインターフェースとDI注入に移行することを想定
+        // DialogServiceがDIコンテナから注入されるようになりました (Issue #73)
 
         if (result.IsSuccess)
         {
@@ -82,25 +82,25 @@ namespace AiDevTest1.WpfApp.ViewModels
           if (uploadResult.IsSuccess)
           {
             // 全処理成功
-            DialogHelper.ShowSuccess("処理が完了しました。");
+            _dialogService.ShowSuccess("処理が完了しました。");
           }
           else
           {
             // ファイルアップロード失敗
-            DialogHelper.ShowFailure($"ファイルアップロードに失敗しました: {uploadResult.ErrorMessage}");
+            _dialogService.ShowError($"ファイルアップロードに失敗しました: {uploadResult.ErrorMessage}");
           }
         }
         else
         {
           // ログ書き込み失敗
-          DialogHelper.ShowFailure($"ログの書き込みに失敗しました: {result.ErrorMessage}");
+          _dialogService.ShowError($"ログの書き込みに失敗しました: {result.ErrorMessage}");
           // ログ書き込み失敗時はファイルアップロードをスキップ
         }
       }
       catch (Exception ex)
       {
         // 予期しないエラーのハンドリング
-        DialogHelper.ShowFailure($"予期しないエラーが発生しました: {ex.Message}");
+        _dialogService.ShowError($"予期しないエラーが発生しました: {ex.Message}");
       }
       finally
       {
@@ -121,7 +121,7 @@ namespace AiDevTest1.WpfApp.ViewModels
       // 処理中の場合は終了をブロック
       if (IsProcessing)
       {
-        DialogHelper.ShowWarning("処理中のため、終了できません。処理完了後に再度お試しください。");
+        _dialogService.ShowWarning("処理中のため、終了できません。処理完了後に再度お試しください。");
         return false;
       }
 

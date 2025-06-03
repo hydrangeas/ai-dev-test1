@@ -11,6 +11,7 @@ using AiDevTest1.Infrastructure.Policies;
 using AiDevTest1.Infrastructure.Services;
 using AiDevTest1.Infrastructure.Events;
 using AiDevTest1.WpfApp.ViewModels;
+using AiDevTest1.WpfApp.Services;
 using Microsoft.Extensions.Logging; // Kept for ILogger if used by Host.CreateDefaultBuilder or future use
 using System;
 using System.Windows;
@@ -70,6 +71,9 @@ namespace AiDevTest1.WpfApp
 
       // Event Dispatcher
       services.AddSingleton<IEventDispatcher, EventDispatcher>();
+
+      // UI Services
+      services.AddSingleton<IDialogService, DialogService>();
 
       // ViewModels
       services.AddSingleton<MainWindowViewModel>();
