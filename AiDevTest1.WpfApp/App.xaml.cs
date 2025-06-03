@@ -7,6 +7,7 @@ using AiDevTest1.Domain.Services;
 using AiDevTest1.Infrastructure.Configuration;
 using AiDevTest1.Infrastructure.Policies;
 using AiDevTest1.Infrastructure.Services;
+using AiDevTest1.Infrastructure.Events;
 using AiDevTest1.WpfApp.ViewModels;
 using Microsoft.Extensions.Logging; // Kept for ILogger if used by Host.CreateDefaultBuilder or future use
 using System;
@@ -60,6 +61,9 @@ namespace AiDevTest1.WpfApp
       services.AddSingleton<ILogWriteService, LogWriteService>();
       services.AddTransient<IFileUploadService, FileUploadService>();
       services.AddSingleton<IIoTHubClient, IoTHubClient>();
+
+      // Event Dispatcher
+      services.AddSingleton<IEventDispatcher, EventDispatcher>();
 
       // ViewModels
       services.AddSingleton<MainWindowViewModel>();
