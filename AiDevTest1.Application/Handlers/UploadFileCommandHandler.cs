@@ -16,16 +16,22 @@ namespace AiDevTest1.Application.Handlers
     {
         private readonly IFileUploadService _fileUploadService;
         private readonly IEventDispatcher _eventDispatcher;
+        private readonly ILogFileHandler _logFileHandler;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="fileUploadService">ファイルアップロードサービス</param>
         /// <param name="eventDispatcher">イベントディスパッチャー</param>
-        public UploadFileCommandHandler(IFileUploadService fileUploadService, IEventDispatcher eventDispatcher)
+        /// <param name="logFileHandler">ログファイルハンドラー</param>
+        public UploadFileCommandHandler(
+            IFileUploadService fileUploadService, 
+            IEventDispatcher eventDispatcher,
+            ILogFileHandler logFileHandler)
         {
             _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
             _eventDispatcher = eventDispatcher ?? throw new ArgumentNullException(nameof(eventDispatcher));
+            _logFileHandler = logFileHandler ?? throw new ArgumentNullException(nameof(logFileHandler));
         }
 
         /// <summary>
@@ -47,15 +53,19 @@ namespace AiDevTest1.Application.Handlers
                 var result = await _fileUploadService.UploadLogFileAsync();
 
                 // イベントの発行
-                var filePath = new LogFilePath($"{DateTime.Now:yyyy-MM-dd}.log");
+                // 実際にアップロードを試みたファイルパスを使用
+                var filePath = _logFileHandler.GetCurrentLogFilePath();
 
                 if (result.IsSuccess)
                 {
                     // アップロード成功イベント
+                    var blobName = new BlobName($"logs/{DateTime.Now:yyyy/MM/dd}/{filePath.FileName}");
+                    var blobUri = $"https://examplestorage.blob.core.windows.net/logs/{DateTime.Now:yyyy/MM/dd}/{filePath.FileName}";
+                    
                     var uploadedEvent = new FileUploadedEvent(
                         filePath,
-                        new BlobName($"logs/{DateTime.Now:yyyy/MM/dd}/device-001.log"),
-                        "https://example.blob.core.windows.net/logs/example.log");
+                        blobName,
+                        blobUri);
 
                     await _eventDispatcher.DispatchAsync(uploadedEvent, cancellationToken);
                 }

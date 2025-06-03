@@ -5,6 +5,9 @@ using AiDevTest1.Application.Commands;
 using AiDevTest1.Application.Interfaces;
 using AiDevTest1.Application.Models;
 using AiDevTest1.Domain.Events;
+using AiDevTest1.Domain.Interfaces;
+using AiDevTest1.Domain.Models;
+using AiDevTest1.Domain.ValueObjects;
 
 namespace AiDevTest1.Application.Handlers
 {
@@ -15,16 +18,22 @@ namespace AiDevTest1.Application.Handlers
     {
         private readonly ILogWriteService _logWriteService;
         private readonly IEventDispatcher _eventDispatcher;
+        private readonly ILogEntryFactory _logEntryFactory;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="logWriteService">ログ書き込みサービス</param>
         /// <param name="eventDispatcher">イベントディスパッチャー</param>
-        public WriteLogCommandHandler(ILogWriteService logWriteService, IEventDispatcher eventDispatcher)
+        /// <param name="logEntryFactory">ログエントリファクトリー</param>
+        public WriteLogCommandHandler(
+            ILogWriteService logWriteService, 
+            IEventDispatcher eventDispatcher,
+            ILogEntryFactory logEntryFactory)
         {
             _logWriteService = logWriteService ?? throw new ArgumentNullException(nameof(logWriteService));
             _eventDispatcher = eventDispatcher ?? throw new ArgumentNullException(nameof(eventDispatcher));
+            _logEntryFactory = logEntryFactory ?? throw new ArgumentNullException(nameof(logEntryFactory));
         }
 
         /// <summary>
@@ -50,12 +59,11 @@ namespace AiDevTest1.Application.Handlers
                     // 成功時はイベントを発行
                     // 注意: 現在の実装ではLogFile集約が使用されていないため、
                     // ここで擬似的にイベントを作成して配信します
+                    // 実際に書き込まれたログエントリを再現
+                    var logEntry = _logEntryFactory.CreateLogEntry();
                     var logWrittenEvent = new LogWrittenToFileEvent(
-                        new Domain.ValueObjects.LogFilePath($"{DateTime.Now:yyyy-MM-dd}.log"),
-                        new Domain.Models.LogEntry(
-                            Domain.Models.EventType.START,
-                            "Application started",
-                            DateTime.Now));
+                        new LogFilePath($"{DateTime.Now:yyyy-MM-dd}.log"),
+                        logEntry);
 
                     await _eventDispatcher.DispatchAsync(logWrittenEvent, cancellationToken);
                 }
